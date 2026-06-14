@@ -146,16 +146,19 @@
 </div>
 
      <div id="view-register" class="hidden flex-col items-center w-full">
-            <h2 class="text-white text-center font-bold text-xl mb-4">Crear Cuenta</h2>
-            <form onsubmit="event.preventDefault(); window.registrarse();" class="space-y-4 w-full">
-                <input type="text" id="reg-nombre" minlength="5" required placeholder="Tu nombre completo" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none">
-                <input type="email" id="reg-email" required placeholder="Correo electrónico" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none">
-                <input type="tel" id="reg-celular" placeholder="Número de celular" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none">
-                <input type="password" id="reg-pass" required placeholder="Contraseña" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none">
-                <button type="submit" class="w-full bg-[#C4151C] hover:bg-red-700 text-white p-3 rounded-lg font-bold transition-all">Registrarse</button>
-            </form>
-            <button onclick="showView('view-login')" class="text-gray-400 text-xs mt-4 hover:text-white">Volver al inicio</button>
-        </div>
+    <h2 class="text-white text-center font-bold text-xl mb-4">Crear Cuenta</h2>
+    <form onsubmit="event.preventDefault(); window.registrarse();" class="space-y-4 w-full">
+        <input type="text" id="reg-nombre" minlength="5" required placeholder="Tu nombre completo" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none">
+        <input type="email" id="reg-email" required placeholder="Correo electrónico" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none">
+        <input type="tel" id="reg-celular" placeholder="Número de celular" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none">
+        <input type="password" id="reg-pass" required placeholder="Contraseña" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none">
+        
+        <input type="password" id="reg-pass-confirm" required placeholder="Confirmar contraseña" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none">
+        
+        <button type="submit" class="w-full bg-[#C4151C] hover:bg-red-700 text-white p-3 rounded-lg font-bold transition-all">Registrarse</button>
+    </form>
+    <button onclick="showView('view-login')" class="text-gray-400 text-xs mt-4 hover:text-white">Volver al inicio</button>
+</div>
 
     <div id="view-forgot" class="hidden flex-col items-center w-full">
             <h2 class="text-white text-center font-bold text-xl mb-4">Recuperar Contraseña</h2>
