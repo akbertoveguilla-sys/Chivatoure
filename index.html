@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linea Rojiblanca</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes pulse-red {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(196, 21, 28, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 12px 4px rgba(196, 21, 28, 0.5); }
+        }
+        .match-day-active { 
+            animation: pulse-red 2s infinite; 
+            background: linear-gradient(135deg, #C4151C 0%, #162345 100%) !important; 
+            color: white !important; 
+            cursor: pointer; 
+            border: 1px solid rgba(255,255,255,0.2); 
+        }
+        .card-hover:hover { 
+            transform: translateY(-3px); 
+            transition: all 0.3s ease; 
+            border-color: #C4151C;
+        }
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+
+        @keyframes toastFade {
+            0% { opacity: 0; transform: translateY(20px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        .animate-toast { animation: toastFade 2.5s ease-in-out forwards; }
+
+        .barra-progreso {
+    transition: width 0.6s ease-in-out; /* Esto hace que el cambio sea suave */
+    }
+    
+ .carrusel-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    /* Esto es la clave para que no se vea la siguiente imagen cortada */
+    scroll-snap-type: x mandatory; 
+    
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Ocultar barra de scroll */
+.carrusel-track::-webkit-scrollbar {
+    display: none;
+}
+
+/* Esto asegura que CADA elemento (imagen o tarjeta) ocupe el 100% */
+.carrusel-track > * {
+    flex: 0 0 100%; /* No se encogen, no se estiran, ancho 100% */
+    scroll-snap-align: start; /* Encaja la imagen al inicio del contenedor */
+    width: 100%;
+    box-sizing: border-box;
+}
+     </style>
+</head>
+
+<!--menus de redes sociales-->
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen pb-12">
+    
+    <header class="sticky top-0 z-50 w-full bg-gradient-to-r from-blue-950 via-gray-900 to-red-900 border-b border-gray-800 shadow-xl">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-3">
+            <div class="flex flex-wrap sm:flex-nowrap justify-between items-center gap-y-3 w-full">
+                <h1 onclick="switchPage('inicio')" class="text-white font-black text-xl tracking-wider sm:text-2xl cursor-pointer hover:text-gray-300 transition-colors order-1">
+                    LINEA<span class="text-[#C4151C]">ROJIBLANCA</span>
+                </h1>
+
+                <div class="flex flex-row gap-4 sm:gap-5 items-center justify-center p-2 sm:p-3 bg-gray-800/40 rounded-full shadow-md backdrop-blur-sm border border-gray-700 w-full sm:w-auto order-3 sm:order-2">
+                    <button type="button" onclick="window.abrirCorreo()" class="text-[#EA4335] hover:scale-110 transition-transform text-lg sm:text-2xl">
+                        <i class="fa-solid fa-envelope"></i>
+                    </button>
+                    <a href="https://www.instagram.com/chivatour_linearojiblanca" target="_blank" class="text-[#E1306C] hover:scale-110 transition-transform text-lg sm:text-2xl"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://www.facebook.com/share/18HYs4Zv9q/" target="_blank" class="text-[#1877F2] hover:scale-110 transition-transform text-lg sm:text-2xl"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="https://wa.me/5215529944781" target="_blank" class="text-[#25D366] hover:scale-110 transition-transform text-lg sm:text-2xl"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a href="https://www.tiktok.com/@linea_rojiblanca" target="_blank" class="text-white hover:scale-110 transition-transform text-lg sm:text-2xl"><i class="fa-brands fa-tiktok"></i></a>
+                </div>
+
+                <button id="auth-btn" onclick="toggleLoginModal()" class="bg-[#C4151C] hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 shadow-md order-2 sm:order-3">
+                    <i class="fa-solid fa-user"></i> <span class="hidden sm:inline">Ingresar</span>
+                </button>
+            </div>
+
+            <div class="w-full flex flex-col items-center gap-2">
+                <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" 
+                        class="sm:hidden bg-gray-800 text-white px-6 py-2 rounded-lg font-bold border border-gray-600 w-full transition-colors hover:bg-gray-700">
+                    <i class="fa-solid fa-bars mr-2"></i> Menú de Navegación
+                </button>
+
+                <div id="mobile-menu" class="hidden sm:flex bg-gray-800/90 backdrop-blur border border-gray-700 rounded-xl p-1 flex-row items-center text-xs sm:text-sm font-bold gap-3 sm:gap-1 shadow-inner w-fit mx-auto justify-center">
+                    <button id="btn-viajes" onclick="switchPage('viajes')" class="py-2 px-3 rounded-lg text-center transition-all text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-bus sm:mr-1.5 hidden sm:inline"></i>
+                        <span>Chiva Tours</span>
+                    </button>
+                    <button id="btn-internacionales" onclick="switchPage('internacionales')" class="py-2 px-3 rounded-lg text-center transition-all text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-earth-americas sm:mr-1.5 hidden sm:inline"></i>
+                        <span>Internacionales y Especiales</span>
+                    </button>
+                    <button id="btn-shop" onclick="switchPage('shop')" class="py-2 px-3 rounded-lg text-center transition-all text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-bag-shopping sm:mr-1.5 hidden sm:inline"></i>
+                        <span>Shop</span>
+                    </button>
+                    <button id="btn-comunidad" onclick="switchPage('comunidad')" class="py-2 px-3 rounded-lg text-center transition-all text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-users sm:mr-1.5 hidden sm:inline"></i>
+                        <span>Comunidad</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+<!-- MODAL DE AUTENTICACIÓN inicio de sesion -->
+<div id="login-modal" class="fixed inset-0 bg-black bg-opacity-80 hidden justify-center items-center z-50">
+    <div class="bg-gray-800 p-6 sm:p-8 rounded-xl w-[92%] sm:w-96 relative"> 
+        <button onclick="toggleLoginModal()" class="absolute top-2 right-2 text-white text-xl">X</button>
+
+
+
+
+     <div id="view-login" class="flex flex-col items-center w-full">
+            <h2 class="text-2xl font-bold mb-4 text-white">Iniciar Sesión</h2>
+            <form onsubmit="event.preventDefault(); iniciarSesion();" class="w-full">
+                <input type="email" id="login-email" placeholder="Correo electrónico" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 mb-3 outline-none">
+                <input type="password" id="login-pass" placeholder="Contraseña" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 mb-3 outline-none">
+                <button type="submit" class="w-full bg-[#C4151C] hover:bg-red-700 text-white p-3 rounded-lg font-bold transition-all">Ingresar</button>
+            </form>
+            <div class="text-xs text-center mt-4">
+                <button onclick="showView('view-forgot')" class="text-gray-400 hover:text-white">¿Olvidaste tu contraseña?</button>
+                <p class="text-gray-300">¿No tienes cuenta? <button onclick="showView('view-register')" class="text-[#C4151C] font-bold hover:underline">Regístrate</button></p>
+            </div>
+        </div>
+
+     <div id="view-register" class="hidden flex-col items-center w-full">
+            <h2 class="text-white text-center font-bold text-xl mb-4">Crear Cuenta</h2>
+            <form onsubmit="event.preventDefault(); window.registrarse();" class="space-y-4 w-full">
+                <input type="text" id="reg-nombre" minlength="5" required placeholder="Tu nombre completo" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none">
+                <input type="email" id="reg-email" required placeholder="Correo electrónico" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none">
+                <input type="tel" id="reg-celular" placeholder="Número de celular" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none">
+                <input type="password" id="reg-pass" required placeholder="Contraseña" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none">
+                <button type="submit" class="w-full bg-[#C4151C] hover:bg-red-700 text-white p-3 rounded-lg font-bold transition-all">Registrarse</button>
+            </form>
+            <button onclick="showView('view-login')" class="text-gray-400 text-xs mt-4 hover:text-white">Volver al inicio</button>
+        </div>
+
+    <div id="view-forgot" class="hidden flex-col items-center w-full">
+            <h2 class="text-white text-center font-bold text-xl mb-4">Recuperar Contraseña</h2>
+            <form onsubmit="event.preventDefault(); recuperarPass();" class="w-full">
+                <input type="email" id="forgot-email" placeholder="Tu correo registrado" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none mb-4">
+                <button type="submit" class="w-full bg-[#C4151C] hover:bg-red-700 text-white p-3 rounded-lg font-bold transition-all">Enviar enlace</button>
+            </form>
+            <button onclick="showView('view-login')" class="text-gray-400 text-xs w-full text-center hover:text-white mt-4">Cancelar</button>
+        </div>
+
+<div id="view-dashboard" class="hidden flex-col items-center w-full">
+            <h2 class="text-2xl font-bold mb-4 text-white">¡Bienvenido, <span class="display-nombre">...</span>!</h2>
+            <button onclick="showView('view-mis-pedidos')" class="bg-blue-600 text-white p-3 rounded-lg mb-3 w-full font-bold">Mis Pedidos</button>
+            <button onclick="showView('view-perfil')" class="bg-blue-500 text-white p-3 rounded-lg mb-3 w-full font-bold">Editar Perfil</button>
+            <button onclick="cambiarPassword()" class="bg-yellow-500 text-white p-3 rounded-lg mb-3 w-full font-bold">Cambiar contraseña</button>
+            <button onclick="cerrarSesion()" class="bg-red-600 text-white p-3 rounded-lg w-full font-bold">Cerrar sesión</button>
+        </div>
+
+
+    <div id="view-mis-pedidos" class="hidden flex-col items-center w-full">
+    <h2 class="text-2xl font-bold mb-2 text-white uppercase tracking-wide">Mis Pedidos</h2>
+    <p class="text-gray-400 text-sm mb-6 text-center">Aquí verás tu historial de viajes y reservaciones.</p>
+    
+    <div id="contenedor-pedidos" class="w-full space-y-4 mb-6">
+        <div class="text-center py-6 text-gray-500">
+            <i class="fa-solid fa-spinner animate-spin text-xl mb-2 text-[#C4151C]"></i>
+            <p class="text-xs">Cargando tus viajes...</p>
+        </div>
+    </div>
+
+    <button onclick="window.showView('view-dashboard')" class="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-xl w-full text-xs font-bold uppercase tracking-wider transition-all">
+        Volver a mi cuenta
+    </button>
+</div>
+   
+<div id="view-perfil" class="hidden flex-col items-center w-full">
+    <h3 class="text-white text-lg font-bold mb-4">Editar Perfil</h3>
+    <input type="text" id="input-nuevo-nombre" placeholder="Nuevo nombre (min 8 caracteres)" class="w-full p-3 bg-gray-900 text-white rounded mb-2">
+    <button onclick="window.cambiarNombre(event)" class="w-full bg-blue-600 p-3 text-white rounded font-bold">Guardar nombre</button>
+    <input type="tel" id="input-nuevo-celular" placeholder="Nuevo número de celular" class="w-full p-3 bg-gray-900 text-white rounded mt-4 mb-2">
+    <button onclick="window.cambiarCelular(event)" class="w-full bg-green-600 p-3 text-white rounded font-bold">Guardar celular</button>
+    <button onclick="window.showView('view-dashboard')" class="mt-4 text-gray-400 text-sm hover:text-white">Volver a mi cuenta</button>
+</div>
+
+</header>
+
+
+ <!--pagina de inicio-->
+    <main class="pt-4">
+        <section id="page-inicio" class="page-section active max-w-6xl mx-auto px-4 mt-4">
+            <div class="bg-gradient-to-br from-gray-800 to-gray-800/50 border border-gray-700 rounded-3xl p-8 md:p-12 shadow-2xl">
+                <h2 class="text-3xl font-black text-red-600">VIVE LA EXPERIENCIA ROJIBLANCA</h2>
+                <p class="text-gray-300">Desde el 2015 re-inventamos la forma de apoyar al Club Deportivo Guadalajara en ambiente familiar, realizando viajes desde CDMX, Puebla y Toluca al Estadio Akron en Guadalajara principalmente y también en ocasiones a otros Estadios en partidos de visita.</p>
+            </div>
+        </section>
+    </main>
+
+</section>
+
+
+
+<!-- PAGIAN COMUNIDAD 4 -->
+
+
+<div id="page-comunidad" class="page-section"> 
+
+    <div id="gallery-container" class="grid grid-cols-1 md:grid-cols-4 gap-6 pb-8">
+        </div>
+
+    <div id="lightbox" class="fixed inset-0 z-[9999] bg-black/95 hidden flex items-center justify-center p-4">
+        <button onclick="window.cerrarLightbox()" class="absolute top-5 right-5 text-white text-4xl">×</button>
+        <button onclick="window.cambiarFotoManual(-1)" class="absolute left-5 text-white text-5xl">❮</button>
+        <img id="lightbox-img" src="" class="max-w-[90%] max-h-[80vh] border-4 border-[#8B5E3C] rounded">
+        <button onclick="window.cambiarFotoManual(1)" class="absolute right-5 text-white text-5xl">❯</button>
+    </div>
+
+    <div class="max-w-4xl mx-auto mt-12 bg-gray-800 p-8 rounded-2xl border border-gray-700 shadow-xl">
+        <h3 class="text-2xl font-bold text-white mb-6 text-center">Califica tu experiencia</h3>
+        
+        <div class="flex flex-col items-center mb-8">
+            <span id="promedio-score" class="text-5xl font-black text-[#C4151C]">0.0</span>
+            <div id="stars-container" class="flex text-amber-400 text-xl my-2"></div>
+            <p class="text-gray-400 text-sm">Basado en opiniones de la comunidad</p>
+        </div>
+
+        <form onsubmit="event.preventDefault(); window.enviarComentario();" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input onfocus="window.validarSesion()" type="text" id="nombre-usuario" placeholder="Tu Nombre" class="bg-gray-900 border border-gray-600 p-3 rounded-lg text-white w-full">
+                
+                <select id="select-rating" class="bg-gray-900 border border-gray-600 p-3 rounded-lg text-white w-full">
+                    <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
+                    <option value="4">⭐⭐⭐⭐ Muy bueno</option>
+                    <option value="3">⭐⭐⭐ Bueno</option>
+                    <option value="2">⭐⭐ Regular</option>
+                    <option value="1">⭐ Malo</option>
+                </select>
+            </div>
+            <textarea onfocus="window.validarSesion()" id="txt-comentario" placeholder="Tu queja, sugerencia o comentario..." class="bg-gray-900 border border-gray-600 p-3 rounded-lg text-white w-full h-32"></textarea>
+            
+            <button type="submit" id="btn-enviar" class="w-full bg-[#C4151C] hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-all">Enviar Comentario</button>
+        </form>
+
+        <div class="mt-12">
+            <h4 class="text-lg font-bold text-white mb-4 border-b border-gray-700 pb-2">Últimos 20 comentarios</h4>
+            <div id="comment-list" class="space-y-4 text-sm">
+                <p class="text-gray-500">Cargando comentarios...</p>
+            </div>
+        </div>
+    </div>
+</div>
+</section></div>
+
+
+<!--PAGINA 2 INTERNACIONALES-->
+<!--pagina de viajes internacionales-->
+
+
+<section id="page-internacionales" class="page-section max-w-6xl mx-auto px-4 mt-4">
+    <h2 class="text-3xl font-black text-red-600 mb-8">CHIVATOURS INTERNACIONALES</h2>
+    
+   
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">       
+
+<div data-id="tour_angeles" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
+    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">⚫LOS ANGELES FC VS CHIVAS 🔴</span></h2>
+    
+    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
+        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
+        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
+        <input type="text" class="inter-inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
+        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
+        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
+        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
+        <div class="flex gap-2">
+            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
+        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
+        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+
+    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
+    <ul class="mt-4 space-y-2 text-gray-300">
+        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
+        <li>Salida: <span class="tour-salida">--</span></li>
+        <li>Regreso: <span class="tour-regreso">--</span></li>
+    </ul>
+    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
+        <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+        <div class="mt-2 text-sm text-yellow-500">
+            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
+            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
+        <button onclick="abrirModalReserva(this)" class="mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
+    </div>
+</div>
+
+
+
+<div data-id="tour_mazatlan" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
+    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">LOS ANGELES FC VS CHIVAS</span></h2>
+    
+    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
+        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
+        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
+        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
+        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
+        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
+        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
+        <div class="flex gap-2">
+            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
+        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
+        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+
+    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
+    <ul class="mt-4 space-y-2 text-gray-300">
+        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
+        <li>Salida: <span class="tour-salida">--</span></li>
+        <li>Regreso: <span class="tour-regreso">--</span></li>
+    </ul>
+    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
+        <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+        <div class="mt-2 text-sm text-yellow-500">
+            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
+            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
+        <button onclick="abrirModalReserva(this)" class="mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
+    </div>
+</div>
+
+<div data-id="tour_puebla" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
+    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">LOS ANGELES FC VS CHIVAS</span></h2>
+    
+    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
+        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
+        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
+        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
+        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
+        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
+        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
+        <div class="flex gap-2">
+            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
+        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
+        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+
+    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
+    <ul class="mt-4 space-y-2 text-gray-300">
+        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
+        <li>Salida: <span class="tour-salida">--</span></li>
+        <li>Regreso: <span class="tour-regreso">--</span></li>
+    </ul>
+    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
+        <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+        <div class="mt-2 text-sm text-yellow-500">
+            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
+            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
+        <button onclick="abrirModalReserva(this)" class="mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
+    </div>
+</div>
+
+
+<div data-id="tour_disney" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
+    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">a</span></h2>
+    
+    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
+        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
+        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
+        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
+        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
+        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
+        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
+        <div class="flex gap-2">
+            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
+        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
+        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+
+    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">agt</span></p>
+    <ul class="mt-4 space-y-2 text-gray-300">
+        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
+        <li>Salida: <span class="tour-salida">--</span></li>
+        <li>Regreso: <span class="tour-regreso">--</span></li>
+    </ul>
+    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
+        <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+        <div class="mt-2 text-sm text-yellow-500">
+            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
+            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
+        <button onclick="abrirModalReserva(this)" class="mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
+    </div>
+</div>
+
+
+
+<div id="modal-politicas" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+    <div class="bg-gray-800 p-8 rounded-2xl max-w-lg text-white max-h-[80vh] overflow-y-auto relative">
+        <button onclick="cerrarModalReserva()" class="absolute top-2 right-4 text-3xl font-bold text-gray-400 hover:text-white">&times;</button>
+
+        <h2 class="text-xl font-bold mb-2">Itinerario</h2>
+        <div id="modal-itinerario-text" class="text-sm mb-4 text-gray-300 whitespace-pre-line"></div>
+        
+        <h2 class="text-xl font-bold mb-2">Políticas</h2>
+        <div id="modal-terminos-text" class="text-sm mb-4 text-gray-300 whitespace-pre-line"></div>
+        
+        <label class="flex items-center gap-2 mb-6">
+            <input type="checkbox" id="check-inter-terminos"> Acepto términos y condiciones
+        </label>
+        <button onclick="window.confirmarReservaInternacional(this)" class="bg-red-600 w-full py-3 rounded-lg font-bold">Confirmar y Reservar</button>
+    </div>
+</div>
+</section>
+
+
+<!-- 1. PÁGINA DE VIAJES 1 -->
+
+ <section id="page-viajes" class="page-section max-w-6xl mx-auto px-4 mt-4">
+    <!-- MODAL ÚNICO E INTEGRADO -->
+    <div id="modal-informacion" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 hidden p-4">
+        <div class="bg-gray-900 border border-red-600 text-white rounded-2xl p-6 max-w-lg w-full max-h-[85vh] flex flex-col">
+            
+            <!-- Encabezado -->
+            <h3 class="text-xl font-black text-red-600 mb-4 text-center uppercase">Políticas y Términos de Viaje</h3>
+            
+            <!-- Texto de Políticas -->
+           <div class="text-xs space-y-6 text-gray-300 overflow-y-auto pr-2 mb-4 flex-1 custom-scrollbar">
+    
+    <div>
+        <h4 class="text-white font-bold mb-3 border-b border-gray-700 pb-1">Políticas de Reservación</h4>
+        <ul class="space-y-3">
+            <li class="flex gap-2">
+                <span class="text-[#C4151C]">🔷</span>
+                <span>Una vez confirmada su reservación, en caso de cancelación por parte del cliente no hay devolución o cambio de lugar.</span>
+            </li>
+            <li class="flex gap-2">
+                <span class="text-[#C4151C]">🔷</span>
+                <span>Apartamos sus lugares con anticipos para servicios (transporte, boletos, hospedaje, etc.), por lo que no es posible reembolsar.</span>
+            </li>
+            <li class="flex gap-2">
+                <span class="text-[#C4151C]">🔷</span>
+                <span>Si el partido es movido de fecha o estadio con 1 semana de anticipación, sí podrá cancelar con devolución.</span>
+            </li>
+            <li class="flex gap-2">
+                <span class="text-[#C4151C]">🔷</span>
+                <span>Si el cambio ocurre con menos de una semana de anticipación, no habrá devolución.</span>
+            </li>
+            <li class="flex gap-3 text-white font-bold mt-2 pt-2 border-t border-gray-800">
+                <span>⚠️</span>
+                <span>Al hacer su reservación, usted acepta todos los puntos anteriores.</span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="text-center font-medium text-white bg-[#C4151C]/10 p-4 rounded-xl border border-red-900/30 shadow-lg">
+        <p class="mb-3 text-sm">
+            👨‍👩‍👧‍👦 Viajes familiares para todas las edades. <br>
+            <span class="text-red-400 font-bold">🚫 Niños menores a 3 años no ingresan al estadio ( Ni con boleto ley de Jalisco).</span>
+        </p>
+        
+        <div class="pt-3 border-t border-red-900/30">
+            <p class="text-xs tracking-widest uppercase">Línea Rojiblanca</p>
+            <div class="flex justify-center gap-3 mt-2 text-sm font-bold">
+                <span>⭐️ 10º ANIV</span>
+                <span>✴️ +200 VIAJES</span>
+            </div>
+            <p class="text-xs mt-2 text-red-400">🙌 MIL GRACIAS 🙌</p>
+        </div>
+    </div>
+</div>
+            <!-- Checkbox y Botón -->
+            <div class="mt-4 pt-4 border-t border-gray-700">
+                <label class="flex items-center gap-2 mb-4 cursor-pointer">
+                    <input type="checkbox" id="check-terminos" class="accent-red-600 w-4 h-4">
+                    <span class="text-xs text-white">Acepto los términos y condiciones</span>
+                </label>
+
+                <div class="flex gap-2">
+                    <button onclick="window.cerrarModal()" class="flex-1 bg-gray-700 py-2 rounded-xl text-xs font-bold uppercase text-white hover:bg-gray-600 transition-all">
+                        Cancelar
+                    </button>
+                    <button id="btn-confirmar" disabled class="flex-1 bg-red-600 opacity-50 text-white py-2 rounded-xl text-xs font-bold uppercase transition-all">
+                        Confirmar y Pagar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    
+    <!-- CONTENIDO DE LA SECCIÓN pagina viajes 1 -->   
+  <section class="max-w-6xl mx-auto px-4 mt-4">
+    <div class="mb-6 text-center sm:text-left">
+        <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
+            PARTIDOS DE <span class="text-[#C4151C]">LOCAL (ESTADIO AKRON)</span>
+        </h2>
+        <p class="text-gray-400 text-sm mt-1">Acompaña al Rebaño en casa. Revisa los días activos en el calendario y aparta tu lugar.</p>
+    </div>
+
+    <!--cale-->
+<aside class="w-full lg:w-80 lg:sticky lg:top-20">
+    <div class="bg-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl">
+        <h3 id="mes-titulo" class="text-white font-bold uppercase tracking-widest text-sm mb-4"></h3>
+        
+        <div class="grid grid-cols-7 gap-2 text-center text-xs text-gray-500 mb-2 font-bold uppercase">
+            <span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sa</span><span>Do</span>
+        </div>
+        <div id="calendario-grid" class="grid grid-cols-7 gap-2">
+            </div>
+    </div>
+</aside>
+   
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <div class="lg:col-span-7 space-y-4">
+
+
+<!-- INICIO DE LISTA DE PARTIDOS -->
+
+<!-- JORNADA 1: CHIVAS VS TOLUCA -->
+<div id="partido-toluca" data-id="tour_toluca" class="bg-gray-800/60 backdrop-blur border border-gray-700 rounded-2xl p-5 shadow-lg flex flex-col gap-4 card-hover">
+    <div class="admin-controls hidden p-4 border border-red-500 rounded-lg space-y-2 mb-4 bg-gray-900">
+        <input type="text" class="input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título (Ej: Chivas vs Toluca)">
+        <input type="text" class="input-fecha-partido w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha del Partido">
+        <input type="text" class="input-fecha-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha de Salida (Ej: 18 Jul | 06:00 AM)">
+        <textarea class="input-puntos w-full bg-gray-700 text-white p-2 rounded h-24" placeholder="Puntos de Salida (CDMX)"></textarea>
+        <div class="flex gap-2">
+            <input type="number" class="input-precio w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Precio Total">
+            <input type="number" class="input-ocupados w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="input-totales w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <button onclick="guardarCambiosTour(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+
+   <div class="flex justify-between items-start">
+    <div>
+        <span class="bg-[#C4151C]/20 text-[#C4151C] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Jornada 1</span>
+        <h3 class="text-xl font-black tracking-wide uppercase text-white mt-1"><span class="tour-titulo">Chivas vs Toluca</span></h3>
+    </div>
+    <span class="text-xs font-bold text-red-400"><i class="fa-solid fa-house-chimney mr-1"></i> Akron</span>
+</div>
+
+<div class="flex items-center gap-2 mt-3 mb-4">
+    <div class="flex-grow bg-gray-700/30 h-2 rounded-full overflow-hidden">
+        <div class="tour-progress-bar bg-red-600 h-full transition-all duration-500" style="width: 0%"></div>
+    </div>
+    <span class="tour-porcentaje-texto text-[10px] font-bold text-gray-400 w-8 text-right">0%</span>
+</div>
+
+    <div class="space-y-4 text-xs text-gray-400 border-t border-gray-700/50 pt-4">
+        <div class="grid grid-cols-1 gap-2">
+            <p><i class="fa-solid fa-calendar-day text-[#C4151C] w-5"></i> <strong>Partido:</strong> <span class="tour-fecha-partido">Sábado 18 Julio, 19:00 hrs</span></p>
+            <p><i class="fa-solid fa-bus text-[#C4151C] w-5"></i> <strong>Salida:</strong> <span class="tour-fecha-salida">18 Jul | 06:00 AM</span></p>
+        </div>
+        
+        <div class="space-y-2">
+            <div class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-location-dot text-[#C4151C] w-5"></i> <span>Puntos de Partida:</span></div>
+            <div class="tour-puntos pl-7 space-y-1.5">
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CDMX:</span> <span class="text-gray-400">Metro Eduardo Molina / 11:00 PM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CUAJIMALPA:</span> <span class="text-gray-400">Suburbia El Yaqui / 12:00 AM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">TOLUCA:</span> <span class="text-gray-400">Tiendas Outlet Lerma / 1:00 AM</span></p>
+            </div>
+        </div>
+    </div>
+
+ <div class="text-[11px] text-yellow-500 text-right"> Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+    <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
+        <div class="flex gap-4">
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$500</p></div>
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">2,500</span></p></div>
+        </div>
+     <button 
+    onclick="prepararReserva(this)" 
+    class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+    data-url="https://link.mercadopago.com.mx/viajeresrva">
+    Reservar
+</button>
+    </div>
+</div>
+
+
+<!-- JORNADA 2: CHIVAS VS JUÁREZ -->
+<div id="partido-juarez" data-id="tour_juarez" class="bg-gray-800/60 backdrop-blur border border-gray-700 rounded-2xl p-5 shadow-lg flex flex-col gap-4 card-hover">
+    <div class="admin-controls hidden p-4 border border-red-500 rounded-lg space-y-2 mb-4 bg-gray-900">
+        <input type="text" class="input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título (Ej: Chivas vs Juárez)">
+        <input type="text" class="input-fecha-partido w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha del Partido">
+        <input type="text" class="input-fecha-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha de Salida (Ej: 25 Jul | 06:00 AM)">
+        <textarea class="input-puntos w-full bg-gray-700 text-white p-2 rounded h-24" placeholder="Puntos de Salida (CDMX)"></textarea>
+        <div class="flex gap-2">
+            <input type="number" class="input-precio w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Precio Total">
+            <input type="number" class="input-ocupados w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="input-totales w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <button onclick="guardarCambiosTour(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+    <div class="flex justify-between items-start">
+        <div>
+            <span class="bg-[#C4151C]/20 text-[#C4151C] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Jornada 2</span>
+            <h3 class="text-xl font-black tracking-wide uppercase text-white mt-1"><span class="tour-titulo">Chivas vs Juárez</span></h3>
+        </div>
+        <span class="text-xs font-bold text-red-400"><i class="fa-solid fa-house-chimney mr-1"></i> Akron</span>
+    </div>
+    <div class="flex items-center gap-2 mt-3 mb-4">
+        <div class="flex-grow bg-gray-700/30 h-2 rounded-full overflow-hidden">
+            <div class="tour-progress-bar bg-red-600 h-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <span class="tour-porcentaje-texto text-[10px] font-bold text-gray-400 w-8 text-right">0%</span>
+    </div>
+    <div class="space-y-4 text-xs text-gray-400 border-t border-gray-700/50 pt-4">
+        <div class="grid grid-cols-1 gap-2">
+            <p><i class="fa-solid fa-calendar-day text-[#C4151C] w-5"></i> <strong>Partido:</strong> <span class="tour-fecha-partido">Sábado 25 Julio, 17:00 hrs</span></p>
+            <p><i class="fa-solid fa-bus text-[#C4151C] w-5"></i> <strong>Salida:</strong> <span class="tour-fecha-salida">25 Jul | 06:00 AM</span></p>
+        </div>
+        <div class="space-y-2">
+            <div class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-location-dot text-[#C4151C] w-5"></i> <span>Puntos de Partida:</span></div>
+            <div class="tour-puntos pl-7 space-y-1.5">
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CDMX:</span> <span class="text-gray-400">Metro Eduardo Molina / 11:00 PM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CUAJIMALPA:</span> <span class="text-gray-400">Suburbia El Yaqui / 12:00 AM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">TOLUCA:</span> <span class="text-gray-400">Tiendas Outlet Lerma / 1:00 AM</span></p>
+            </div>
+        </div>
+    </div>
+     <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+    <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
+        <div class="flex gap-4">
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$500</p></div>
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">2,500</span></p></div>
+        </div>
+         <button 
+    onclick="prepararReserva(this)" 
+    class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+    data-url="https://link.mercadopago.com.mx/viajeresrva">
+    Reservar
+</button>
+    </div>
+</div>
+
+<!-- JORNADA 5: CHIVAS VS TIJUANA -->
+<div id="partido-tijuana" data-id="tour_tijuana" class="bg-gray-800/60 backdrop-blur border border-gray-700 rounded-2xl p-5 shadow-lg flex flex-col gap-4 card-hover">
+    <div class="admin-controls hidden p-4 border border-red-500 rounded-lg space-y-2 mb-4 bg-gray-900">
+        <input type="text" class="input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título (Ej: Chivas vs Tijuana)">
+        <input type="text" class="input-fecha-partido w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha del Partido">
+        <input type="text" class="input-fecha-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha de Salida (Ej: 22 Ago | 06:00 AM)">
+        <textarea class="input-puntos w-full bg-gray-700 text-white p-2 rounded h-24" placeholder="Puntos de Salida (CDMX)"></textarea>
+        <div class="flex gap-2">
+            <input type="number" class="input-precio w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Precio Total">
+            <input type="number" class="input-ocupados w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="input-totales w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <button onclick="guardarCambiosTour(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+    <div class="flex justify-between items-start">
+        <div>
+            <span class="bg-[#C4151C]/20 text-[#C4151C] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Jornada 5</span>
+            <h3 class="text-xl font-black tracking-wide uppercase text-white mt-1"><span class="tour-titulo">Chivas vs Tijuana</span></h3>
+        </div>
+        <span class="text-xs font-bold text-red-400"><i class="fa-solid fa-house-chimney mr-1"></i> Akron</span>
+    </div>
+    <div class="flex items-center gap-2 mt-3 mb-4">
+        <div class="flex-grow bg-gray-700/30 h-2 rounded-full overflow-hidden">
+            <div class="tour-progress-bar bg-red-600 h-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <span class="tour-porcentaje-texto text-[10px] font-bold text-gray-400 w-8 text-right">0%</span>
+    </div>
+    <div class="space-y-4 text-xs text-gray-400 border-t border-gray-700/50 pt-4">
+        <div class="grid grid-cols-1 gap-2">
+            <p><i class="fa-solid fa-calendar-day text-[#C4151C] w-5"></i> <strong>Partido:</strong> <span class="tour-fecha-partido">Sábado 22 Agosto, 17:00 hrs</span></p>
+            <p><i class="fa-solid fa-bus text-[#C4151C] w-5"></i> <strong>Salida:</strong> <span class="tour-fecha-salida">22 Ago | 06:00 AM</span></p>
+        </div>
+        <div class="space-y-2">
+            <div class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-location-dot text-[#C4151C] w-5"></i> <span>Puntos de Partida:</span></div>
+            <div class="tour-puntos pl-7 space-y-1.5">
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CDMX:</span> <span class="text-gray-400">Metro Eduardo Molina / 11:00 PM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CUAJIMALPA:</span> <span class="text-gray-400">Suburbia El Yaqui / 12:00 AM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">TOLUCA:</span> <span class="text-gray-400">Tiendas Outlet Lerma / 1:00 AM</span></p>
+            </div>
+        </div>
+    </div>
+    <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+    <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
+        <div class="flex gap-4">
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$500</p></div>
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">2,500</span></p></div>
+        </div>
+         <button 
+    onclick="prepararReserva(this)" 
+    class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+    data-url="https://link.mercadopago.com.mx/viajeresrva">
+    Reservar
+</button>
+</div>
+</div>
+
+<!-- JORNADA 8: CHIVAS VS PUMAS UNAM -->
+<div id="partido-pumas" data-id="tour_pumas" class="bg-gray-800/60 backdrop-blur border border-gray-700 rounded-2xl p-5 shadow-lg flex flex-col gap-4 card-hover">
+    <div class="admin-controls hidden p-4 border border-red-500 rounded-lg space-y-2 mb-4 bg-gray-900">
+        <input type="text" class="input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título (Ej: Chivas vs Pumas UNAM)">
+        <input type="text" class="input-fecha-partido w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha del Partido">
+        <input type="text" class="input-fecha-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha de Salida (Ej: 13 Sep | 05:00 AM)">
+        <textarea class="input-puntos w-full bg-gray-700 text-white p-2 rounded h-24" placeholder="Puntos de Salida (CDMX)"></textarea>
+        <div class="flex gap-2">
+            <input type="number" class="input-precio w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Precio Total">
+            <input type="number" class="input-ocupados w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="input-totales w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <button onclick="guardarCambiosTour(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+    <div class="flex justify-between items-start">
+        <div>
+            <span class="bg-[#C4151C]/20 text-[#C4151C] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Jornada 8</span>
+            <h3 class="text-xl font-black tracking-wide uppercase text-white mt-1"><span class="tour-titulo">Chivas vs Pumas UNAM</span></h3>
+        </div>
+        <span class="text-xs font-bold text-red-400"><i class="fa-solid fa-house-chimney mr-1"></i> Akron</span>
+    </div>
+    <div class="flex items-center gap-2 mt-3 mb-4">
+        <div class="flex-grow bg-gray-700/30 h-2 rounded-full overflow-hidden">
+            <div class="tour-progress-bar bg-red-600 h-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <span class="tour-porcentaje-texto text-[10px] font-bold text-gray-400 w-8 text-right">0%</span>
+    </div>
+    <div class="space-y-4 text-xs text-gray-400 border-t border-gray-700/50 pt-4">
+        <div class="grid grid-cols-1 gap-2">
+            <p><i class="fa-solid fa-calendar-day text-[#C4151C] w-5"></i> <strong>Partido:</strong> <span class="tour-fecha-partido">Domingo 13 Septiembre, 18:00 hrs</span></p>
+            <p><i class="fa-solid fa-bus text-[#C4151C] w-5"></i> <strong>Salida:</strong> <span class="tour-fecha-salida">13 Sep | 05:00 AM</span></p>
+        </div>
+        <div class="space-y-2">
+            <div class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-location-dot text-[#C4151C] w-5"></i> <span>Puntos de Partida:</span></div>
+            <div class="tour-puntos pl-7 space-y-1.5">
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CDMX:</span> <span class="text-gray-400">Metro Eduardo Molina / 11:00 PM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CUAJIMALPA:</span> <span class="text-gray-400">Suburbia El Yaqui / 12:00 AM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">TOLUCA:</span> <span class="text-gray-400">Tiendas Outlet Lerma / 1:00 AM</span></p>
+            </div>
+        </div>
+    </div>
+    <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+    <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
+        <div class="flex gap-4">
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$500</p></div>
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">2,500</span></p></div>
+        </div>
+         <button 
+    onclick="prepararReserva(this)" 
+    class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+    data-url="https://link.mercadopago.com.mx/viajeresrva">
+    Reservar
+</button>
+    </div>
+</div>
+
+
+<!-- JORNADA 10: CHIVAS VS QUERÉTARO -->
+<div id="partido-queretaro" data-id="tour_queretaro" class="bg-gray-800/60 backdrop-blur border border-gray-700 rounded-2xl p-5 shadow-lg flex flex-col gap-4 card-hover">
+    <div class="admin-controls hidden p-4 border border-red-500 rounded-lg space-y-2 mb-4 bg-gray-900">
+        <input type="text" class="input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título (Ej: Chivas vs Querétaro)">
+        <input type="text" class="input-fecha-partido w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha del Partido">
+        <input type="text" class="input-fecha-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha de Salida (Ej: 26 Sep | 06:00 AM)">
+        <textarea class="input-puntos w-full bg-gray-700 text-white p-2 rounded h-24" placeholder="Puntos de Salida (CDMX)"></textarea>
+        <div class="flex gap-2">
+            <input type="number" class="input-precio w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Precio Total">
+            <input type="number" class="input-ocupados w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="input-totales w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <button onclick="guardarCambiosTour(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+    <div class="flex justify-between items-start">
+        <div>
+            <span class="bg-[#C4151C]/20 text-[#C4151C] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Jornada 10</span>
+            <h3 class="text-xl font-black tracking-wide uppercase text-white mt-1"><span class="tour-titulo">Chivas vs Querétaro</span></h3>
+        </div>
+        <span class="text-xs font-bold text-red-400"><i class="fa-solid fa-house-chimney mr-1"></i> Akron</span>
+    </div>
+    <div class="flex items-center gap-2 mt-3 mb-4">
+        <div class="flex-grow bg-gray-700/30 h-2 rounded-full overflow-hidden">
+            <div class="tour-progress-bar bg-red-600 h-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <span class="tour-porcentaje-texto text-[10px] font-bold text-gray-400 w-8 text-right">0%</span>
+    </div>
+    <div class="space-y-4 text-xs text-gray-400 border-t border-gray-700/50 pt-4">
+        <div class="grid grid-cols-1 gap-2">
+            <p><i class="fa-solid fa-calendar-day text-[#C4151C] w-5"></i> <strong>Partido:</strong> <span class="tour-fecha-partido">Sábado 26 Septiembre, 17:00 hrs</span></p>
+            <p><i class="fa-solid fa-bus text-[#C4151C] w-5"></i> <strong>Salida:</strong> <span class="tour-fecha-salida">26 Sep | 06:00 AM</span></p>
+        </div>
+        <div class="space-y-2">
+            <div class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-location-dot text-[#C4151C] w-5"></i> <span>Puntos de Partida:</span></div>
+            <div class="tour-puntos pl-7 space-y-1.5">
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CDMX:</span> <span class="text-gray-400">Metro Eduardo Molina / 11:00 PM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CUAJIMALPA:</span> <span class="text-gray-400">Suburbia El Yaqui / 12:00 AM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">TOLUCA:</span> <span class="text-gray-400">Tiendas Outlet Lerma / 1:00 AM</span></p>
+            </div>
+        </div>
+    </div>
+     <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+    <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
+        <div class="flex gap-4">
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$500</p></div>
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">2,500</span></p></div>
+        </div>
+       <button 
+    onclick="prepararReserva(this)" 
+    class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+    data-url="https://link.mercadopago.com.mx/viajeresrva">
+    Reservar
+</button>
+    </div>
+</div>
+
+<!-- JORNADA 12: CHIVAS VS TIGRES -->
+<div id="partido-tigres" data-id="tour_tigres" class="bg-gray-800/60 backdrop-blur border border-gray-700 rounded-2xl p-5 shadow-lg flex flex-col gap-4 card-hover">
+    <div class="admin-controls hidden p-4 border border-red-500 rounded-lg space-y-2 mb-4 bg-gray-900">
+        <input type="text" class="input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título (Ej: Chivas vs Tigres)">
+        <input type="text" class="input-fecha-partido w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha del Partido">
+        <input type="text" class="input-fecha-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha de Salida (Ej: 17 Oct | 06:00 AM)">
+        <textarea class="input-puntos w-full bg-gray-700 text-white p-2 rounded h-24" placeholder="Puntos de Salida (CDMX)"></textarea>
+        <div class="flex gap-2">
+            <input type="number" class="input-precio w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Precio Total">
+            <input type="number" class="input-ocupados w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="input-totales w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <button onclick="guardarCambiosTour(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+    <div class="flex justify-between items-start">
+        <div>
+            <span class="bg-[#C4151C]/20 text-[#C4151C] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Jornada 12</span>
+            <h3 class="text-xl font-black tracking-wide uppercase text-white mt-1"><span class="tour-titulo">Chivas vs Tigres</span></h3>
+        </div>
+        <span class="text-xs font-bold text-red-400"><i class="fa-solid fa-house-chimney mr-1"></i> Akron</span>
+    </div>
+    <div class="flex items-center gap-2 mt-3 mb-4">
+        <div class="flex-grow bg-gray-700/30 h-2 rounded-full overflow-hidden">
+            <div class="tour-progress-bar bg-red-600 h-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <span class="tour-porcentaje-texto text-[10px] font-bold text-gray-400 w-8 text-right">0%</span>
+    </div>
+    <div class="space-y-4 text-xs text-gray-400 border-t border-gray-700/50 pt-4">
+        <div class="grid grid-cols-1 gap-2">
+            <p><i class="fa-solid fa-calendar-day text-[#C4151C] w-5"></i> <strong>Partido:</strong> <span class="tour-fecha-partido">Sábado 17 Octubre, 17:00 hrs</span></p>
+            <p><i class="fa-solid fa-bus text-[#C4151C] w-5"></i> <strong>Salida:</strong> <span class="tour-fecha-salida">17 Oct | 06:00 AM</span></p>
+        </div>
+        <div class="space-y-2">
+            <div class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-location-dot text-[#C4151C] w-5"></i> <span>Puntos de Partida:</span></div>
+            <div class="tour-puntos pl-7 space-y-1.5">
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CDMX:</span> <span class="text-gray-400">Metro Eduardo Molina / 11:00 PM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CUAJIMALPA:</span> <span class="text-gray-400">Suburbia El Yaqui / 12:00 AM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">TOLUCA:</span> <span class="text-gray-400">Tiendas Outlet Lerma / 1:00 AM</span></p>
+            </div>
+        </div>
+    </div>
+    <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+    <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
+        <div class="flex gap-4">
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$500</p></div>
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">2,500</span></p></div>
+        </div>
+        <button 
+    onclick="prepararReserva(this)" 
+    class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+    data-url="https://link.mercadopago.com.mx/viajeresrva">
+    Reservar
+</button>
+    </div>
+</div>
+
+
+<!-- JORNADA 13: CHIVAS VS NECAXA -->
+<div id="partido-necaxa" data-id="tour_necaxa" class="bg-gray-800/60 backdrop-blur border border-gray-700 rounded-2xl p-5 shadow-lg flex flex-col gap-4 card-hover">
+    <div class="admin-controls hidden p-4 border border-red-500 rounded-lg space-y-2 mb-4 bg-gray-900">
+        <input type="text" class="input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título (Ej: Chivas vs Necaxa)">
+        <input type="text" class="input-fecha-partido w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha del Partido">
+        <input type="text" class="input-fecha-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha de Salida (Ej: 20 Oct | 10:00 AM)">
+        <textarea class="input-puntos w-full bg-gray-700 text-white p-2 rounded h-24" placeholder="Puntos de Salida (CDMX)"></textarea>
+        <div class="flex gap-2">
+            <input type="number" class="input-precio w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Precio Total">
+            <input type="number" class="input-ocupados w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="input-totales w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <button onclick="guardarCambiosTour(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+    <div class="flex justify-between items-start">
+        <div>
+            <span class="bg-[#C4151C]/20 text-[#C4151C] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Jornada 13</span>
+            <h3 class="text-xl font-black tracking-wide uppercase text-white mt-1"><span class="tour-titulo">Chivas vs Necaxa</span></h3>
+        </div>
+        <span class="text-xs font-bold text-red-400"><i class="fa-solid fa-house-chimney mr-1"></i> Akron</span>
+    </div>
+    <div class="flex items-center gap-2 mt-3 mb-4">
+        <div class="flex-grow bg-gray-700/30 h-2 rounded-full overflow-hidden">
+            <div class="tour-progress-bar bg-red-600 h-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <span class="tour-porcentaje-texto text-[10px] font-bold text-gray-400 w-8 text-right">0%</span>
+    </div>
+    <div class="space-y-4 text-xs text-gray-400 border-t border-gray-700/50 pt-4">
+        <div class="grid grid-cols-1 gap-2">
+            <p><i class="fa-solid fa-calendar-day text-[#C4151C] w-5"></i> <strong>Partido:</strong> <span class="tour-fecha-partido">Martes 20 Octubre, 21:00 hrs</span></p>
+            <p><i class="fa-solid fa-bus text-[#C4151C] w-5"></i> <strong>Salida:</strong> <span class="tour-fecha-salida">20 Oct | 10:00 AM</span></p>
+        </div>
+        <div class="space-y-2">
+            <div class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-location-dot text-[#C4151C] w-5"></i> <span>Puntos de Partida:</span></div>
+            <div class="tour-puntos pl-7 space-y-1.5">
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CDMX:</span> <span class="text-gray-400">Metro Eduardo Molina / 11:00 PM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CUAJIMALPA:</span> <span class="text-gray-400">Suburbia El Yaqui / 12:00 AM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">TOLUCA:</span> <span class="text-gray-400">Tiendas Outlet Lerma / 1:00 AM</span></p>
+            </div>
+        </div>
+    </div>
+    <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+    <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
+        <div class="flex gap-4">
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$500</p></div>
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">2,500</span></p></div>
+        </div>
+         <button 
+    onclick="prepararReserva(this)" 
+    class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+    data-url="https://link.mercadopago.com.mx/viajeresrva">
+    Reservar
+</button>
+    </div>
+</div>
+
+
+<!-- JORNADA 15: CHIVAS VS ATLANTE -->
+<div id="partido-atlante" data-id="tour_atlante" class="bg-gray-800/60 backdrop-blur border border-gray-700 rounded-2xl p-5 shadow-lg flex flex-col gap-4 card-hover">
+    <div class="admin-controls hidden p-4 border border-red-500 rounded-lg space-y-2 mb-4 bg-gray-900">
+        <input type="text" class="input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título (Ej: Chivas vs Atlante)">
+        <input type="text" class="input-fecha-partido w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha del Partido">
+        <input type="text" class="input-fecha-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha de Salida (Ej: 31 Oct | 06:00 AM)">
+        <textarea class="input-puntos w-full bg-gray-700 text-white p-2 rounded h-24" placeholder="Puntos de Salida (CDMX)"></textarea>
+        <div class="flex gap-2">
+            <input type="number" class="input-precio w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Precio Total">
+            <input type="number" class="input-ocupados w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="input-totales w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <button onclick="guardarCambiosTour(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+    <div class="flex justify-between items-start">
+        <div>
+            <span class="bg-[#C4151C]/20 text-[#C4151C] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Jornada 15</span>
+            <h3 class="text-xl font-black tracking-wide uppercase text-white mt-1"><span class="tour-titulo">Chivas vs Atlante</span></h3>
+        </div>
+        <span class="text-xs font-bold text-red-400"><i class="fa-solid fa-house-chimney mr-1"></i> Akron</span>
+    </div>
+    <div class="flex items-center gap-2 mt-3 mb-4">
+        <div class="flex-grow bg-gray-700/30 h-2 rounded-full overflow-hidden">
+            <div class="tour-progress-bar bg-red-600 h-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <span class="tour-porcentaje-texto text-[10px] font-bold text-gray-400 w-8 text-right">0%</span>
+    </div>
+    <div class="space-y-4 text-xs text-gray-400 border-t border-gray-700/50 pt-4">
+        <div class="grid grid-cols-1 gap-2">
+            <p><i class="fa-solid fa-calendar-day text-[#C4151C] w-5"></i> <strong>Partido:</strong> <span class="tour-fecha-partido">Sábado 31 Octubre, 19:00 hrs</span></p>
+            <p><i class="fa-solid fa-bus text-[#C4151C] w-5"></i> <strong>Salida:</strong> <span class="tour-fecha-salida">31 Oct | 06:00 AM</span></p>
+        </div>
+        <div class="space-y-2">
+            <div class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-location-dot text-[#C4151C] w-5"></i> <span>Puntos de Partida:</span></div>
+            <div class="tour-puntos pl-7 space-y-1.5">
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CDMX:</span> <span class="text-gray-400">Metro Eduardo Molina / 11:00 PM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CUAJIMALPA:</span> <span class="text-gray-400">Suburbia El Yaqui / 12:00 AM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">TOLUCA:</span> <span class="text-gray-400">Tiendas Outlet Lerma / 1:00 AM</span></p>
+            </div>
+        </div>
+    </div>
+     <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+    <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
+        <div class="flex gap-4">
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$500</p></div>
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">2,500</span></p></div>
+        </div>
+         <button 
+    onclick="prepararReserva(this)" 
+    class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+    data-url="https://link.mercadopago.com.mx/viajeresrva">
+    Reservar
+
+    
+</button>
+</div>
+</div>
+
+
+<!-- JORNADA 17: CHIVAS VS CRUZ AZUL -->
+<div id="partido-cruzazul" data-id="tour_cruzazul" class="bg-gray-800/60 backdrop-blur border border-gray-700 rounded-2xl p-5 shadow-lg flex flex-col gap-4 card-hover">
+    <div class="admin-controls hidden p-4 border border-red-500 rounded-lg space-y-2 mb-4 bg-gray-900">
+        <input type="text" class="input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título (Ej: Chivas vs Cruz Azul)">
+        <input type="text" class="input-fecha-partido w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha del Partido">
+        <input type="text" class="input-fecha-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha de Salida (Ej: 22 Nov | 05:00 AM)">
+        <textarea class="input-puntos w-full bg-gray-700 text-white p-2 rounded h-24" placeholder="Puntos de Salida (CDMX)"></textarea>
+        <div class="flex gap-2">
+            <input type="number" class="input-precio w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Precio Total">
+            <input type="number" class="input-ocupados w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="input-totales w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <button onclick="guardarCambiosTour(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+    <div class="flex justify-between items-start">
+        <div>
+            <span class="bg-[#C4151C]/20 text-[#C4151C] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Jornada 17</span>
+            <h3 class="text-xl font-black tracking-wide uppercase text-white mt-1"><span class="tour-titulo">Chivas vs Cruz Azul</span></h3>
+        </div>
+        <span class="text-xs font-bold text-red-400"><i class="fa-solid fa-house-chimney mr-1"></i> Akron</span>
+    </div>
+    <div class="flex items-center gap-2 mt-3 mb-4">
+        <div class="flex-grow bg-gray-700/30 h-2 rounded-full overflow-hidden">
+            <div class="tour-progress-bar bg-red-600 h-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <span class="tour-porcentaje-texto text-[10px] font-bold text-gray-400 w-8 text-right">0%</span>
+    </div>
+    <div class="space-y-4 text-xs text-gray-400 border-t border-gray-700/50 pt-4">
+        <div class="grid grid-cols-1 gap-2">
+            <p><i class="fa-solid fa-calendar-day text-[#C4151C] w-5"></i> <strong>Partido:</strong> <span class="tour-fecha-partido">Domingo 22 Noviembre, 17:00 hrs</span></p>
+            <p><i class="fa-solid fa-bus text-[#C4151C] w-5"></i> <strong>Salida:</strong> <span class="tour-fecha-salida">22 Nov | 05:00 AM</span></p>
+        </div>
+        <div class="space-y-2">
+            <div class="flex items-center gap-2 text-white font-bold"><i class="fa-solid fa-location-dot text-[#C4151C] w-5"></i> <span>Puntos de Partida:</span></div>
+            <div class="tour-puntos pl-7 space-y-1.5">
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CDMX:</span> <span class="text-gray-400">Metro Eduardo Molina / 11:00 PM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">CUAJIMALPA:</span> <span class="text-gray-400">Suburbia El Yaqui / 12:00 AM</span></p>
+                <p class="flex items-start gap-1"><span class="text-white font-semibold">TOLUCA:</span> <span class="text-gray-400">Tiendas Outlet Lerma / 1:00 AM</span></p>
+            </div>
+        </div>
+    </div>
+      <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+    <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
+        <div class="flex gap-4">
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$500</p></div>
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">2,500</span></p></div>
+        </div>
+         <button 
+    onclick="prepararReserva(this)" 
+    class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+    data-url="https://link.mercadopago.com.mx/viajeresrva">
+    Reservar
+</button>
+</div>
+</section>
+
+
+</section>
+
+
+
+
+
+   <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>    
+    <script type="module" src="app-internacional.js"></script>
+    <script type="module" src="app.js"></script>
+     <script type="module" src="comunidad.js"></script>
+</body>
+</html>
+
+
+   
+
+
+
+
+
+
+
+
+
