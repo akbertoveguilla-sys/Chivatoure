@@ -125,18 +125,25 @@
 
 
 
-     <div id="view-login" class="flex flex-col items-center w-full">
-            <h2 class="text-2xl font-bold mb-4 text-white">Iniciar Sesión</h2>
-            <form onsubmit="event.preventDefault(); iniciarSesion();" class="w-full">
-                <input type="email" id="login-email" placeholder="Correo electrónico" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 mb-3 outline-none">
-                <input type="password" id="login-pass" placeholder="Contraseña" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 mb-3 outline-none">
-                <button type="submit" class="w-full bg-[#C4151C] hover:bg-red-700 text-white p-3 rounded-lg font-bold transition-all">Ingresar</button>
-            </form>
-            <div class="text-xs text-center mt-4">
-                <button onclick="showView('view-forgot')" class="text-gray-400 hover:text-white">¿Olvidaste tu contraseña?</button>
-                <p class="text-gray-300">¿No tienes cuenta? <button onclick="showView('view-register')" class="text-[#C4151C] font-bold hover:underline">Regístrate</button></p>
-            </div>
+     <div <div id="view-login" class="flex flex-col items-center w-full">
+    <h2 class="text-2xl font-bold mb-4 text-white">Iniciar Sesión</h2>
+    <form onsubmit="event.preventDefault(); iniciarSesion();" class="w-full">
+        <input type="email" id="login-email" placeholder="Correo electrónico" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 mb-3 outline-none">
+        
+        <div class="relative w-full mb-3">
+            <input type="password" id="login-pass" placeholder="Contraseña" class="w-full bg-gray-900 p-3 rounded-lg text-white border border-gray-600 outline-none pr-10">
+            <button type="button" onclick="const p = document.getElementById('login-pass'); p.type = p.type === 'password' ? 'text' : 'password';" class="absolute right-3 top-3 text-gray-400 hover:text-white">
+                👁️
+            </button>
         </div>
+
+        <button type="submit" class="w-full bg-[#C4151C] hover:bg-red-700 text-white p-3 rounded-lg font-bold transition-all">Ingresar</button>
+    </form>
+    <div class="text-xs text-center mt-4">
+        <button onclick="showView('view-forgot')" class="text-gray-400 hover:text-white">¿Olvidaste tu contraseña?</button>
+        <p class="text-gray-300">¿No tienes cuenta? <button onclick="showView('view-register')" class="text-[#C4151C] font-bold hover:underline">Regístrate</button></p>
+    </div>
+</div>
 
      <div id="view-register" class="hidden flex-col items-center w-full">
             <h2 class="text-white text-center font-bold text-xl mb-4">Crear Cuenta</h2>
