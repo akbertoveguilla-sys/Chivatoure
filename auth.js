@@ -80,9 +80,16 @@ window.registrarse = async () => {
     const email = document.getElementById('reg-email').value.trim();
     const celular = document.getElementById('reg-celular').value.trim();
     const passInput = document.getElementById('reg-pass');
+    const confirmPassInput = document.getElementById('reg-pass-confirm'); // Nuevo campo
 
     if (nombre.length < 8) { mostrarNotificacion("⚠️ Nombre corto (min 8 car.)", true); return; }
     if (celular.length < 10) { mostrarNotificacion("⚠️ Celular inválido", true); return; }
+    
+    // Nueva validación
+    if (passInput.value !== confirmPassInput.value) {
+        mostrarNotificacion("⚠️ Las contraseñas no coinciden", true);
+        return;
+    }
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, passInput.value);
@@ -108,7 +115,10 @@ window.registrarse = async () => {
             mostrarNotificacion("❌ Error: " + error.message, true);
         }
     }
-    finally { passInput.value = ''; }
+    finally { 
+        passInput.value = ''; 
+        confirmPassInput.value = ''; // Limpiamos también el nuevo campo
+    }
 };
 
 
