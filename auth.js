@@ -31,6 +31,16 @@ window.mostrarNotificacion = (mensaje, esError = false) => {
 };
 
 // 1. INICIO DE SESIÓN
+function togglePassword() {
+    const passInput = document.getElementById('login-pass');
+    if (passInput.type === 'password') {
+        passInput.type = 'text';
+    } else {
+        passInput.type = 'password';
+    }
+}
+
+// Tu código original permanece intacto:
 window.iniciarSesion = async () => {
     const email = document.getElementById('login-email').value.trim();
     const passInput = document.getElementById('login-pass');
