@@ -173,15 +173,7 @@ window.abrirModalReserva = async (btn) => {
     }
 };
 
-// === AGREGA ESTO AL FINAL DE TU ARCHIVO (Fuera de la función) ===
-// Este evento detecta cuando el usuario interactúa con el checkbox
-document.getElementById('check-terminos')?.addEventListener('change', function() {
-    const btnReservar = document.getElementById('btn-confirmar-reserva');
-    if (btnReservar) {
-        // Si está marcado, disabled se vuelve false (se activa). Si no, true (se bloquea).
-        btnReservar.disabled = !this.checked; 
-    }
-});
+
 
 
 
@@ -286,3 +278,5 @@ onAuthStateChanged(auth, async (user) => {
     // Tu código original que ya funcionaba:
     document.getElementById('modal-politicas').classList.add('hidden');
 };
+
+
