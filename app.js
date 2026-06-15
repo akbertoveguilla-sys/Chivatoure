@@ -157,7 +157,7 @@ window.guardarCambiosTour = async function(btn) {
     
     capturar('.input-titulo', 'titulo');
     capturar('.input-precio', 'precio');
-    capturar('.input-aparta', 'aparta'); // <-- ESTO ES LO NUEVO
+    capturar('.input-aparta', 'aparta'); 
     capturar('.input-fecha-partido', 'fecha_partido');
     capturar('.input-fecha-salida', 'fecha_salida');
     capturar('.input-puntos', 'puntos_salida');
@@ -171,6 +171,13 @@ window.guardarCambiosTour = async function(btn) {
 
     try {
         await setDoc(doc(db, "partidos", docId), datosActualizar, { merge: true });
+        
+        // --- AQUÍ ESTÁ LO NUEVO PARA QUE SE VEA EN LA WEB ---
+        if (datosActualizar.aparta) card.querySelector('.tour-aparta').textContent = datosActualizar.aparta;
+        if (datosActualizar.precio) card.querySelector('.tour-precio').textContent = datosActualizar.precio;
+        if (datosActualizar.titulo) card.querySelector('.tour-titulo').textContent = datosActualizar.titulo;
+        // ----------------------------------------------------
+
         window.mostrarNotificacion("Cambios guardados correctamente.");
         btn.classList.add('bg-green-600');
     } catch (error) {
