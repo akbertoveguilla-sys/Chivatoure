@@ -22,7 +22,7 @@ function actualizarTarjetaUI(card, data) {
         '.tour-fecha-salida': data.fecha_salida,
         '.tour-puntos': data.puntos_salida,
         '.tour-precio': data.precio,
-        '.tour-aparta': data.aparta, // <-- AÑADIDO PARA QUE SE ACTUALICE AL CARGAR
+        '.tour-aparta': data.aparta,
         '.tour-cupos-ocupados': data.cupo_disponible,
         '.tour-cupos-totales': data.cupo_total
     };
@@ -45,66 +45,6 @@ function actualizarTarjetaUI(card, data) {
         txt.innerText = `${porcentaje}%`;
     }
 }
-
-// Genera el calendario dinámico lateral
-const generarCalendarioCompleto = () => {
-    const grid = document.getElementById('calendario-grid');
-    const titulo = document.getElementById('mes-titulo');
-    if (!grid) return;
-
-    grid.innerHTML = "";
-    
-    const fechaActual = new Date();
-    const mes = fechaActual.getMonth();
-    const anio = fechaActual.getFullYear();
-    
-    // Título del mes
-    titulo.innerText = fechaActual.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
-
-    // Días en el mes
-    const primerDia = new Date(anio, mes, 1).getDay(); // Día de la semana en que inicia
-    const totalDias = new Date(anio, mes + 1, 0).getDate(); // Cuántos días tiene el mes
-
-    // Crear espacios vacíos previos al inicio del mes
-    // (Ajuste para que el calendario empiece en Lunes: (primerDia === 0 ? 6 : primerDia - 1))
-    const espacios = (primerDia === 0 ? 6 : primerDia - 1);
-    for (let i = 0; i < espacios; i++) {
-        grid.appendChild(document.createElement('div'));
-    }
-
-    // Obtener días con partidos desde tus tarjetas
-    const tarjetas = document.querySelectorAll('.card-hover');
-    const diasConPartido = [];
-    tarjetas.forEach(card => {
-        const fechaTexto = card.querySelector('.tour-fecha-partido')?.innerText || "";
-        const diaNum = parseInt(fechaTexto.match(/\d+/)); // Extrae el número del texto
-        if (diaNum) diasConPartido.push({ dia: diaNum, id: card.id });
-    });
-
-    // Dibujar los días del mes
-    for (let i = 1; i <= totalDias; i++) {
-        const div = document.createElement('div');
-        div.className = "aspect-square flex items-center justify-center text-xs rounded-full cursor-pointer transition-all";
-        div.innerText = i;
-
-        // Verificar si este día tiene partido
-        const partido = diasConPartido.find(p => p.dia === i);
-        
-        if (partido) {
-            div.classList.add("bg-[#C4151C]", "text-white", "font-bold", "shadow-lg");
-            div.onclick = () => {
-                const el = document.getElementById(partido.id);
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                el.classList.add('ring-2', 'ring-yellow-500');
-                setTimeout(() => el.classList.remove('ring-2', 'ring-yellow-500'), 1500);
-            };
-        } else {
-            div.classList.add("text-gray-600");
-        }
-
-        grid.appendChild(div);
-    }
-};
 
 // --- 3. Funciones de Reserva y Administración ---
 
@@ -138,7 +78,7 @@ window.prepararReserva = (boton) => {
     const nombre = card.querySelector('.tour-titulo').innerText;
     const fecha = card.querySelector('.tour-fecha-partido').innerText;
     const precio = card.querySelector('.tour-precio').innerText;
-    const urlPago = boton.getAttribute('data-url');
+    const urlPago = boton.getAttribute('data-url'); // <--- Aquí captura el link de Mercado Pago
     window.reservarTour(nombre, fecha, precio, urlPago);
 };
 
@@ -163,7 +103,7 @@ window.guardarCambiosTour = async function(btn) {
     capturar('.input-fecha-salida', 'fecha_salida');
     capturar('.input-puntos', 'puntos_salida');
     capturar('.input-ocupados', 'cupo_disponible');
-    capturar('.input-totales', 'cupo_totales'); // Nota: asegurado para que coincida con tu lógica
+    capturar('.input-totales', 'cupo_totales');
 
     if (Object.keys(datosActualizar).length === 0) {
         window.mostrarNotificacion("No hay datos nuevos para guardar.", true);
@@ -173,7 +113,6 @@ window.guardarCambiosTour = async function(btn) {
     try {
         await setDoc(doc(db, "partidos", docId), datosActualizar, { merge: true });
         
-        // --- AQUÍ ESTÁ LO NUEVO PARA QUE SE VEA EN LA WEB ---
         if (datosActualizar.aparta) card.querySelector('.tour-aparta').textContent = datosActualizar.aparta;
         if (datosActualizar.precio) card.querySelector('.tour-precio').textContent = datosActualizar.precio;
         if (datosActualizar.titulo) card.querySelector('.tour-titulo').textContent = datosActualizar.titulo;
@@ -181,7 +120,6 @@ window.guardarCambiosTour = async function(btn) {
         if (datosActualizar.fecha_salida) card.querySelector('.tour-fecha-salida').textContent = datosActualizar.fecha_salida;
         if (datosActualizar.cupo_disponible) card.querySelector('.tour-cupos-ocupados').textContent = datosActualizar.cupo_disponible;
         if (datosActualizar.cupo_total) card.querySelector('.tour-cupos-totales').textContent = datosActualizar.cupo_total;
-        // ----------------------------------------------------
 
         window.mostrarNotificacion("Cambios guardados correctamente.");
         btn.classList.add('bg-green-600');
@@ -201,16 +139,12 @@ const initPartidos = () => {
                 actualizarTarjetaUI(card, docSnap.data());
             }
         });
-        // Actualizamos calendario cada vez que cambian los datos
-        generarCalendarioCompleto();
     });
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Iniciar conexión Firebase
     initPartidos();
     
-    // 2. Configurar botón confirmar
     const btnConfirmar = document.getElementById('btn-confirmar');
     const checkbox = document.getElementById('check-terminos');
 
@@ -227,6 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 btnConfirmar.disabled = true;
                 btnConfirmar.innerText = "Procesando...";
 
+                // Se sigue guardando el registro en Firebase con estatus "Pendiente Pago"
                 await addDoc(collection(db, "pedidos"), {
                     userId: auth.currentUser.uid,
                     userEmail: auth.currentUser.email,
@@ -234,18 +169,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     fechaPartido: datosReservaPendiente.fecha,
                     total: parseFloat(String(datosReservaPendiente.precio).replace(/[^0-9.]/g, '')) || 0,
                     fechaCompra: new Date().toISOString(),
-                    estatus: "Pendiente WhatsApp"
+                    estatus: "Pendiente Pago" 
                 });
 
-                const numeroWhatsApp = "5215518102711";
-                const mensaje = `¡Hola! Me gustaría apartar mi lugar para: ${datosReservaPendiente.nombre}.\n\n` +
-                                `Datos:\n- Partido: ${datosReservaPendiente.nombre}\n` +
-                                `- Fecha: ${datosReservaPendiente.fecha}\n` +
-                                `¿Me podrías dar información para realizar el pago?`;
-
-                window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`, '_blank');
-                window.cerrarModal();
-                window.mostrarNotificacion("Redirigiendo a WhatsApp...");
+                // --- NUEVA LÓGICA: REDIRECCIÓN A MERCADO PAGO ---
+                if (datosReservaPendiente.urlPago && datosReservaPendiente.urlPago.trim() !== "") {
+                    window.open(datosReservaPendiente.urlPago, '_blank');
+                    window.cerrarModal();
+                    window.mostrarNotificacion("Redirigiendo a Mercado Pago...");
+                } else {
+                    window.mostrarNotificacion("Error: Este tour no tiene un enlace de pago configurado.", true);
+                }
 
             } catch (error) {
                 console.error("Error:", error);
