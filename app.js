@@ -176,6 +176,10 @@ window.guardarCambiosTour = async function(btn) {
         if (datosActualizar.aparta) card.querySelector('.tour-aparta').textContent = datosActualizar.aparta;
         if (datosActualizar.precio) card.querySelector('.tour-precio').textContent = datosActualizar.precio;
         if (datosActualizar.titulo) card.querySelector('.tour-titulo').textContent = datosActualizar.titulo;
+        if (datosActualizar.fecha_partido) card.querySelector('.tour-fecha-partido').textContent = datosActualizar.fecha_partido;
+        if (datosActualizar.fecha_salida) card.querySelector('.tour-fecha-salida').textContent = datosActualizar.fecha_salida;
+        if (datosActualizar.cupo_disponible) card.querySelector('.tour-cupos-ocupados').textContent = datosActualizar.cupo_disponible;
+        if (datosActualizar.cupo_total) card.querySelector('.tour-cupos-totales').textContent = datosActualizar.cupo_total;
         // ----------------------------------------------------
 
         window.mostrarNotificacion("Cambios guardados correctamente.");
@@ -184,6 +188,7 @@ window.guardarCambiosTour = async function(btn) {
         window.mostrarNotificacion("Error: " + error.message, true);
     }
 };
+
 
 // --- 4. Firebase y Inicialización ---
 
