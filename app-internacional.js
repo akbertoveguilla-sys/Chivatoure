@@ -266,7 +266,7 @@ onAuthStateChanged(auth, async (user) => {
 
 //tache para cerrar terminos y conwindow.cerrarModalReserva = () => {
     // === NUEVA LÓGICA DE RESETEO ===
-    const checkbox = document.getElementById('check-terminos'); 
+    const checkbox = document.getElementById('check-inter-terminos'); 
     const btnReservar = document.getElementById('btn-confirmar-reserva'); 
 
     if (checkbox && btnReservar) {
