@@ -148,7 +148,7 @@ window.abrirModalReserva = async (btn) => {
 
             // BLINDAJE: Solo escribe los textos si los elementos existen en el HTML
             const elItinerario = document.getElementById('modal-itinerario-text');
-            const elTerminos = document.getElementById('modal-terminos-text');
+            const elTerminos = document.getElementById('modal-inter-terminos-text');
             if (elItinerario) elItinerario.innerText = data.itinerario || "Sin itinerario disponible.";
             if (elTerminos) elTerminos.innerText = data.terminos || "Sin políticas disponibles.";
         }
