@@ -157,6 +157,7 @@ window.guardarCambiosTour = async function(btn) {
     
     capturar('.input-titulo', 'titulo');
     capturar('.input-precio', 'precio');
+    capturar('.input-aparta', 'aparta'); // <-- ESTO ES LO NUEVO
     capturar('.input-fecha-partido', 'fecha_partido');
     capturar('.input-fecha-salida', 'fecha_salida');
     capturar('.input-puntos', 'puntos_salida');
