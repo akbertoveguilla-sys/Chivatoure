@@ -147,6 +147,10 @@ window.abrirModalReserva = async (btn) => {
 
         if (docSnap.exists()) {
             const data = docSnap.data();
+            
+            // Guardamos el título del viaje de forma global (detecta si en tu BD se llama 'titulo' o 'nombre')
+            window.viajeSeleccionado = data.titulo || data.nombre || btn.dataset.titulo || "Viaje Internacional";
+
             // Inyectar en el modal
             document.getElementById('modal-itinerario-text').innerText = data.itinerario || "Sin itinerario disponible.";
             document.getElementById('modal-terminos-text').innerText = data.terminos || "Sin políticas disponibles.";
@@ -157,6 +161,7 @@ window.abrirModalReserva = async (btn) => {
         window.mostrarNotificacion("Error al cargar modal: " + error.message, true);
     }
 };
+
 
 
 //boton reserva confirmada
@@ -176,8 +181,17 @@ window.confirmarReservaInternacional = async (btn) => {
     }
 
     try {
-        // Obtenemos el título desde el atributo data-titulo del botón
-        const tituloViaje = btn.dataset.titulo || "Viaje Internacional";
+        // Obtenemos el título guardado globalmente por abrirModalReserva
+        const tituloViaje = window.viajeSeleccionado || "Viaje Internacional";
+
+        // Obtenemos el nombre o usamos el correo antes del @ si viene vacío en Firebase
+        let nombreUsuario = user.displayName;
+        if (!nombreUsuario && user.email) {
+            nombreUsuario = user.email.split('@')[0];
+        }
+        if (!nombreUsuario) {
+            nombreUsuario = "Usuario registrado";
+        }
 
         // --- LÓGICA DE WHATSAPP ---
         const numeroWhatsApp = "5215518102711"; // Tu número registrado
@@ -185,7 +199,7 @@ window.confirmarReservaInternacional = async (btn) => {
                         `Quiero solicitar mi reservación internacional.\n\n` +
                         `Datos:\n` +
                         `- Viaje: ${tituloViaje}\n` +
-                        `- Nombre: ${user.displayName || 'Usuario registrado'}\n` +
+                        `- Nombre: ${nombreUsuario}\n` +
                         `- Estado: Acepté términos y condiciones.\n\n` +
                         `¿Me podrían proporcionar los datos para el depósito o pago con tarjeta?`;
 
@@ -204,6 +218,7 @@ window.confirmarReservaInternacional = async (btn) => {
         alert("Ocurrió un error al procesar tu solicitud. Intenta de nuevo.");
     }
 };
+
 
 
 
