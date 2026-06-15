@@ -125,7 +125,11 @@ window.guardarCambiosInternacional = async (btn) => {
 //abre terminos y condi
 window.abrirModalReserva = async (btn) => {
     if (!auth.currentUser) {
-        window.mostrarNotificacion("Por favor, inicia sesión para reservar tú lugar.", true);
+        if (typeof window.mostrarNotificacion === "function") {
+            window.mostrarNotificacion("Por favor, inicia sesión para reservar tú lugar.", true);
+        } else {
+            alert("Por favor, inicia sesión para reservar tú lugar.");
+        }
         return;
     }
 
@@ -142,8 +146,11 @@ window.abrirModalReserva = async (btn) => {
             
             window.viajeSeleccionado = data.Título || data.Titulo || data.titulo || data.nombre || data.destino || btn.dataset.titulo || "Viaje Internacional";
 
-            document.getElementById('modal-itinerario-text').innerText = data.itinerario || "Sin itinerario disponible.";
-            document.getElementById('modal-terminos-text').innerText = data.terminos || "Sin políticas disponibles.";
+            // BLINDAJE: Solo escribe los textos si los elementos existen en el HTML
+            const elItinerario = document.getElementById('modal-itinerario-text');
+            const elTerminos = document.getElementById('modal-terminos-text');
+            if (elItinerario) elItinerario.innerText = data.itinerario || "Sin itinerario disponible.";
+            if (elTerminos) elTerminos.innerText = data.terminos || "Sin políticas disponibles.";
         }
 
         // === RESETEO AL ABRIR ===
@@ -153,10 +160,17 @@ window.abrirModalReserva = async (btn) => {
         if (checkbox) checkbox.checked = false;   
         if (btnReservar) btnReservar.disabled = true; 
 
-        document.getElementById('modal-politicas').classList.remove('hidden');
+        // BLINDAJE: Solo remueve 'hidden' si encuentra el ID del modal
+        const modalPoliticas = document.getElementById('modal-politicas');
+        if (modalPoliticas) {
+            modalPoliticas.classList.remove('hidden');
+        } else {
+            console.error("Error: No se encontró el elemento #modal-politicas en esta página.");
+            alert("Error: No se encontró la estructura del modal (#modal-politicas) en este HTML.");
+        }
     } catch (error) {
         console.error("Error al cargar modal:", error);
-        window.mostrarNotificacion("Error al cargar modal: " + error.message, true);
+        alert("Error al cargar modal: " + error.message);
     }
 };
 
@@ -251,7 +265,6 @@ window.cerrarModalReserva = () => {
     if (checkbox) checkbox.checked = false;   
     if (btnReservar) btnReservar.disabled = true; 
 
-    document.getElementById('modal-politicas').classList.add('hidden');
+    const modalPoliticas = document.getElementById('modal-politicas');
+    if (modalPoliticas) modalPoliticas.classList.add('hidden');
 };
-
-
