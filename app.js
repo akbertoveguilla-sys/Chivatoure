@@ -189,6 +189,25 @@ window.guardarCambiosTour = async function(btn) {
     }
 };
 
+window.addEventListener('DOMContentLoaded', async () => {
+    // 1. Buscamos el documento en Firebase
+    const docRef = doc(db, "partidos", "tour_toluca");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        const card = document.getElementById('partido-toluca');
+
+        // 2. Si el dato existe en la base, lo inyectamos en el HTML
+        if (data.titulo) card.querySelector('.tour-titulo').textContent = data.titulo;
+        if (data.precio) card.querySelector('.tour-precio').textContent = data.precio;
+        if (data.aparta) card.querySelector('.tour-aparta').textContent = data.aparta;
+        if (data.fecha_partido) card.querySelector('.tour-fecha-partido').textContent = data.fecha_partido;
+        if (data.fecha_salida) card.querySelector('.tour-fecha-salida').textContent = data.fecha_salida;
+        if (data.cupo_disponible) card.querySelector('.tour-cupos-ocupados').textContent = data.cupo_disponible;
+        if (data.cupo_total) card.querySelector('.tour-cupos-totales').textContent = data.cupo_total;
+    }
+});
 
 // --- 4. Firebase y Inicialización ---
 
