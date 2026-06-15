@@ -148,8 +148,8 @@ window.abrirModalReserva = async (btn) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
             
-            // Guardamos el título del viaje de forma global (detecta si en tu BD se llama 'titulo' o 'nombre')
-            window.viajeSeleccionado = data.titulo || data.nombre || btn.dataset.titulo || "Viaje Internacional";
+            // Guardamos el título del viaje de forma global revisando todos los posibles campos de tu BD
+            window.viajeSeleccionado = data.titulo || data.nombre || data.destino || btn.dataset.titulo || "Viaje Internacional";
 
             // Inyectar en el modal
             document.getElementById('modal-itinerario-text').innerText = data.itinerario || "Sin itinerario disponible.";
@@ -184,8 +184,23 @@ window.confirmarReservaInternacional = async (btn) => {
         // Obtenemos el título guardado globalmente por abrirModalReserva
         const tituloViaje = window.viajeSeleccionado || "Viaje Internacional";
 
-        // Obtenemos el nombre o usamos el correo antes del @ si viene vacío en Firebase
+        // Buscamos el nombre del usuario directamente en Firestore (Colección 'users')
         let nombreUsuario = user.displayName;
+        
+        try {
+            const userRef = doc(db, "users", user.uid); 
+            const userSnap = await getDoc(userRef);
+            
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                // Intenta obtener el nombre según cómo se llame tu campo en la base de datos
+                nombreUsuario = userData.nombre || userData.nombreCompleto || userData.name || nombreUsuario;
+            }
+        } catch (dbError) {
+            console.error("Error al obtener nombre de usuario desde Firestore:", dbError);
+        }
+
+        // Si no hay nombre en la base de datos ni en auth, usamos el correo antes del @
         if (!nombreUsuario && user.email) {
             nombreUsuario = user.email.split('@')[0];
         }
@@ -196,7 +211,7 @@ window.confirmarReservaInternacional = async (btn) => {
         // --- LÓGICA DE WHATSAPP ---
         const numeroWhatsApp = "5215518102711"; // Tu número registrado
         const mensaje = `¡Hola! 👋\n` +
-                        `Quiero solicitar mi reservación internacional.\n\n` +
+                        `Quiero solicitar la información de pago para poder reservar.\n\n` +
                         `Datos:\n` +
                         `- Viaje: ${tituloViaje}\n` +
                         `- Nombre: ${nombreUsuario}\n` +
@@ -218,6 +233,7 @@ window.confirmarReservaInternacional = async (btn) => {
         alert("Ocurrió un error al procesar tu solicitud. Intenta de nuevo.");
     }
 };
+
 
 
 
