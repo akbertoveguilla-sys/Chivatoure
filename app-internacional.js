@@ -148,8 +148,8 @@ window.abrirModalReserva = async (btn) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
             
-            // Guardamos el título del viaje de forma global revisando todos los posibles campos de tu BD
-            window.viajeSeleccionado = data.titulo || data.nombre || data.destino || btn.dataset.titulo || "Viaje Internacional";
+            // CORRECCIÓN: Validamos 'Título' (con acento) y 'Titulo' de tu BD antes de los demás respaldos
+            window.viajeSeleccionado = data.Título || data.Titulo || data.titulo || data.nombre || data.destino || btn.dataset.titulo || "Viaje Internacional";
 
             // Inyectar en el modal
             document.getElementById('modal-itinerario-text').innerText = data.itinerario || "Sin itinerario disponible.";
@@ -161,6 +161,7 @@ window.abrirModalReserva = async (btn) => {
         window.mostrarNotificacion("Error al cargar modal: " + error.message, true);
     }
 };
+
 
 
 
