@@ -67,7 +67,6 @@ const verificarAdmin = async (user) => {
 // --- 3. Funciones del Modal y Admin (Expuestas a Window) ---
 
 window.guardarCambiosInternacional = async (btn) => {
-    // 1. Aislamiento total: Buscamos solo dentro de este contenedor
     const contenedor = btn.closest('[data-id]');
     const idTour = contenedor.getAttribute('data-id');
     
@@ -79,17 +78,14 @@ window.guardarCambiosInternacional = async (btn) => {
     const datosAEnviar = {};
 
     try {
-        // Función interna para capturar
         const addIfNotEmpty = (key, selector, isNumber = false) => {
-            const el = contenedor.querySelector(selector); // <--- IMPORTANTE: Solo dentro del contenedor
+            const el = contenedor.querySelector(selector); 
             const valor = el?.value;
             if (valor !== "" && valor !== undefined && valor !== null) {
                 datosAEnviar[key] = isNumber ? Number(valor) : valor;
             }
         };
 
-        // Captura usando prefijos únicos (ej: .inter-input-titulo)
-        // Asegúrate de que en tu HTML estas clases sean exclusivas de Internacionales
         addIfNotEmpty("Titulo", ".inter-input-titulo");
         addIfNotEmpty("Subtitulo", ".inter-input-subtitulo");
         addIfNotEmpty("fecha evento", ".inter-input-fecha-evento");
@@ -106,14 +102,11 @@ window.guardarCambiosInternacional = async (btn) => {
             return;
         }
 
-        // 2. Guardar en Firebase
         const tourRef = doc(db, "viajes", idTour);
         await setDoc(tourRef, datosAEnviar, { merge: true });
 
-        // 3. Notificación de éxito
         window.mostrarNotificacion("Cambios guardados correctamente.");
 
-        // 4. Limpieza de campos (SOLO dentro de este contenedor)
         contenedor.querySelectorAll('input, textarea').forEach(el => {
             if (el.tagName !== 'BUTTON' && el.type !== 'submit') {
                 el.value = '';
@@ -131,7 +124,6 @@ window.guardarCambiosInternacional = async (btn) => {
 
 //abre terminos y condi
 window.abrirModalReserva = async (btn) => {
-    // Validación de sesión
     if (!auth.currentUser) {
         window.mostrarNotificacion("Por favor, inicia sesión para reservar tú lugar.", true);
         return;
@@ -148,23 +140,18 @@ window.abrirModalReserva = async (btn) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
             
-            // CORRECCIÓN: Validamos 'Título' (con acento) y 'Titulo' de tu BD antes de los demás respaldos
             window.viajeSeleccionado = data.Título || data.Titulo || data.titulo || data.nombre || data.destino || btn.dataset.titulo || "Viaje Internacional";
 
-            // Inyectar en el modal
             document.getElementById('modal-itinerario-text').innerText = data.itinerario || "Sin itinerario disponible.";
             document.getElementById('modal-terminos-text').innerText = data.terminos || "Sin políticas disponibles.";
         }
 
-        // === NUEVA LÓGICA DE CONTROL (RESETEO) ===
-        const checkbox = document.getElementById('check-terminos'); 
+        // === RESETEO AL ABRIR ===
+        const checkbox = document.getElementById('check-inter-terminos'); 
         const btnReservar = document.getElementById('btn-confirmar-reserva'); 
 
-        if (checkbox && btnReservar) {
-            checkbox.checked = false;   // Forzamos a que el check siempre inicie DESACTIVADO
-            btnReservar.disabled = true; // Forzamos a que el botón inicie BLOQUEADO
-        }
-        // =========================================
+        if (checkbox) checkbox.checked = false;   
+        if (btnReservar) btnReservar.disabled = true; 
 
         document.getElementById('modal-politicas').classList.remove('hidden');
     } catch (error) {
@@ -174,21 +161,14 @@ window.abrirModalReserva = async (btn) => {
 };
 
 
-
-
-
-
-
 //boton reserva confirmada
 window.confirmarReservaInternacional = async (btn) => {
-    // 1. Validamos el checkbox
     const checkbox = document.getElementById('check-inter-terminos');
     if (checkbox && !checkbox.checked) {
         alert("Debes aceptar los términos y condiciones.");
         return;
     }
 
-    // 2. Obtenemos el usuario logueado
     const user = auth.currentUser;
     if (!user) {
         alert("Debes iniciar sesión para reservar.");
@@ -196,10 +176,7 @@ window.confirmarReservaInternacional = async (btn) => {
     }
 
     try {
-        // Obtenemos el título guardado globalmente por abrirModalReserva
         const tituloViaje = window.viajeSeleccionado || "Viaje Internacional";
-
-        // Buscamos el nombre del usuario directamente en Firestore (Colección 'users')
         let nombreUsuario = user.displayName;
         
         try {
@@ -208,14 +185,12 @@ window.confirmarReservaInternacional = async (btn) => {
             
             if (userSnap.exists()) {
                 const userData = userSnap.data();
-                // Intenta obtener el nombre según cómo se llame tu campo en la base de datos
                 nombreUsuario = userData.nombre || userData.nombreCompleto || userData.name || nombreUsuario;
             }
         } catch (dbError) {
             console.error("Error al obtener nombre de usuario desde Firestore:", dbError);
         }
 
-        // Si no hay nombre en la base de datos ni en auth, usamos el correo antes del @
         if (!nombreUsuario && user.email) {
             nombreUsuario = user.email.split('@')[0];
         }
@@ -223,8 +198,7 @@ window.confirmarReservaInternacional = async (btn) => {
             nombreUsuario = "Usuario registrado";
         }
 
-        // --- LÓGICA DE WHATSAPP ---
-        const numeroWhatsApp = "5215518102711"; // Tu número registrado
+        const numeroWhatsApp = "5215518102711"; 
         const mensaje = `¡Hola! 👋\n` +
                         `Quiero solicitar la información de pago para poder reservar.\n\n` +
                         `Datos:\n` +
@@ -233,15 +207,11 @@ window.confirmarReservaInternacional = async (btn) => {
                         `- Estado: Acepté términos y condiciones.\n\n` +
                         `¿Me podrían proporcionar los datos para el depósito o pago con tarjeta?`;
 
-        // Abrir WhatsApp con el mensaje
         window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`, '_blank');
         
-        // 4. Mostramos el mensaje de confirmación
         alert("Redirigiendo a WhatsApp para completar tu reserva.");
         
-        // 5. Cerramos el modal
-        const modal = document.getElementById('modal-politicas');
-        if (modal) modal.classList.add('hidden');
+        window.cerrarModalReserva();
 
     } catch (error) {
         console.error("Error al procesar:", error);
@@ -250,12 +220,19 @@ window.confirmarReservaInternacional = async (btn) => {
 };
 
 
-
-
-
 // --- 4. Ejecución principal ---
 document.addEventListener('DOMContentLoaded', () => {
     initCupos();
+
+    // ESCUCHADOR DINÁMICO
+    const checkbox = document.getElementById('check-inter-terminos');
+    const btnReservar = document.getElementById('btn-confirmar-reserva');
+    
+    if (checkbox && btnReservar) {
+        checkbox.addEventListener('change', function() {
+            btnReservar.disabled = !this.checked;
+        });
+    }
 });
 
 onAuthStateChanged(auth, async (user) => {
@@ -264,18 +241,16 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-//tache para cerrar terminos y conwindow.cerrarModalReserva = () => {
-    // === NUEVA LÓGICA DE RESETEO ===
+
+// tache para cerrar terminos y condiciones
+window.cerrarModalReserva = () => {
+    // === RESETEO AL CERRAR ===
     const checkbox = document.getElementById('check-inter-terminos'); 
     const btnReservar = document.getElementById('btn-confirmar-reserva'); 
 
-    if (checkbox && btnReservar) {
-        checkbox.checked = false;   // Desmarca el checkbox
-        btnReservar.disabled = true; // Bloquea el botón de nuevo
-    }
-    // ===============================
+    if (checkbox) checkbox.checked = false;   
+    if (btnReservar) btnReservar.disabled = true; 
 
-    // Tu código original que ya funcionaba:
     document.getElementById('modal-politicas').classList.add('hidden');
 };
 
