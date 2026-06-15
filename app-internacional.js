@@ -155,22 +155,13 @@ window.abrirModalReserva = async (btn) => {
 
         // === RESETEO AL ABRIR ===
         const checkboxInter = document.getElementById('check-inter-terminos');
-const btnConfirmarInter = document.getElementById('btn-confirmar-reserva');
+        const btnConfirmarInter = document.getElementById('btn-confirmar-reserva');
 
-if (checkboxInter && btnConfirmarInter) {
-    checkboxInter.addEventListener('change', () => {
-        if (checkboxInter.checked) {
-            // Cuando se acepta: se habilita y recupera el color total
-            btnConfirmarInter.disabled = false;
-            btnConfirmarInter.classList.remove('opacity-50');
-        } else {
-            // Si lo desmarcan: se vuelve a bloquear y a poner gris
+        if (checkboxInter) checkboxInter.checked = false;
+        if (btnConfirmarInter) {
             btnConfirmarInter.disabled = true;
             btnConfirmarInter.classList.add('opacity-50');
         }
-    });
-}
-
 
         // BLINDAJE: Solo remueve 'hidden' si encuentra el ID del modal
         const modalPoliticas = document.getElementById('modal-politicas');
@@ -251,17 +242,24 @@ window.confirmarReservaInternacional = async (btn) => {
 document.addEventListener('DOMContentLoaded', () => {
     initCupos();
 
-    // ESCUCHADOR DINÁMICO
+    // ESCUCHADOR ÚNICO Y DEFINITIVO PARA TERMINOS Y OPACIDAD
     const checkbox = document.getElementById('check-inter-terminos');
     const btnReservar = document.getElementById('btn-confirmar-reserva');
     
     if (checkbox && btnReservar) {
-        // Aseguramos que inicien apagados desde que carga la página
+        // Aseguramos el estado apagado inicial
         checkbox.checked = false;
         btnReservar.disabled = true;
+        btnReservar.classList.add("opacity-50");
 
         checkbox.addEventListener('change', function() {
-            btnReservar.disabled = !this.checked;
+            if (this.checked) {
+                btnReservar.disabled = false;
+                btnReservar.classList.remove("opacity-50"); // Se ilumina
+            } else {
+                btnReservar.disabled = true;
+                btnReservar.classList.add("opacity-50");    // Se vuelve gris
+            }
         });
     }
 });
@@ -281,7 +279,10 @@ window.cerrarModalReserva = () => {
     const btnReservar = document.getElementById('btn-confirmar-reserva'); 
 
     if (checkbox) checkbox.checked = false;   
-    if (btnReservar) btnReservar.disabled = true; 
+    if (btnReservar) {
+        btnReservar.disabled = true; 
+        btnReservar.classList.add("opacity-50");
+    }
 
     const modalPoliticas = document.getElementById('modal-politicas');
     if (modalPoliticas) modalPoliticas.classList.add('hidden');
