@@ -6,7 +6,8 @@ import {
     getDocs, 
     collection,
     onSnapshot,
-    addDoc
+    addDoc,
+    increment // <--- NUEVO: Importado para actualizar la barra de progreso de forma segura
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 // --- 1. Estado Global ---
@@ -53,7 +54,7 @@ window.cerrarModal = () => {
     if (modal) modal.classList.add('hidden');
 };
 
-window.reservarTour = (nombre, fecha, precio, urlPago) => {
+window.reservarTour = (id, nombre, fecha, precio, urlPago) => { // <--- MODIFICADO: Ahora recibe el id del partido
     if (!auth || !auth.currentUser) {
         window.mostrarNotificacion("Por favor, inicia sesión para reservar.", true);
         return;
@@ -68,18 +69,26 @@ window.reservarTour = (nombre, fecha, precio, urlPago) => {
         btn.innerText = "Confirmar y Pagar";
     }
 
-    datosReservaPendiente = { nombre, fecha, precio, urlPago };
+    datosReservaPendiente = { id, nombre, fecha, precio, urlPago }; // <--- Guardamos el id en el estado global
+
+    // --- NUEVO: Resetear el selector a 1 lugar y poner el precio base al abrir el modal ---
+    const selectLugares = document.getElementById('select-lugares');
+    const totalPagoTxt = document.getElementById('modal-total-pago');
+    if (selectLugares) selectLugares.value = "1";
+    if (totalPagoTxt) totalPagoTxt.innerText = precio;
+
     const modal = document.getElementById('modal-informacion');
     if (modal) modal.classList.remove('hidden');
 };
 
 window.prepararReserva = (boton) => {
     const card = boton.closest('.card-hover');
+    const id = card.getAttribute('data-id'); // <--- NUEVO: Captura el ID único del partido
     const nombre = card.querySelector('.tour-titulo').innerText;
     const fecha = card.querySelector('.tour-fecha-partido').innerText;
     const precio = card.querySelector('.tour-precio').innerText;
     const urlPago = boton.getAttribute('data-url'); // <--- Aquí captura el link de Mercado Pago
-    window.reservarTour(nombre, fecha, precio, urlPago);
+    window.reservarTour(id, nombre, fecha, precio, urlPago); // <--- Enviamos el id
 };
 
 window.guardarCambiosTour = async function(btn) {
@@ -147,6 +156,19 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const btnConfirmar = document.getElementById('btn-confirmar');
     const checkbox = document.getElementById('check-terminos');
+    const selectLugares = document.getElementById('select-lugares'); // <--- NUEVO
+    const totalPagoTxt = document.getElementById('modal-total-pago'); // <--- NUEVO
+
+    // --- NUEVO: Multiplicar el total en la interfaz del modal al cambiar cantidad de lugares ---
+    if (selectLugares && totalPagoTxt) {
+        selectLugares.addEventListener('change', () => {
+            if (!datosReservaPendiente) return;
+            const precioUnitario = parseFloat(String(datosReservaPendiente.precio).replace(/[^0-9.]/g, '')) || 0;
+            const cantidad = parseInt(selectLugares.value) || 1;
+            const totalCalculado = precioUnitario * cantidad;
+            totalPagoTxt.innerText = `$${totalCalculado.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        });
+    }
 
     if (btnConfirmar && checkbox) {
         checkbox.addEventListener('change', (e) => {
@@ -161,33 +183,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 btnConfirmar.disabled = true;
                 btnConfirmar.innerText = "Procesando...";
 
+                // --- NUEVO: Calcular los lugares y el total final multiplicado ---
+                const cantidadLugares = selectLugares ? parseInt(selectLugares.value) : 1;
+                const precioUnitario = parseFloat(String(datosReservaPendiente.precio).replace(/[^0-9.]/g, '')) || 0;
+                const totalFinal = precioUnitario * cantidadLugares;
+
                 // Se sigue guardando el registro en Firebase con estatus "Pendiente Pago"
                 await addDoc(collection(db, "pedidos"), {
                     userId: auth.currentUser.uid,
                     userEmail: auth.currentUser.email,
                     partido: datosReservaPendiente.nombre,
                     fechaPartido: datosReservaPendiente.fecha,
-                    total: parseFloat(String(datosReservaPendiente.precio).replace(/[^0-9.]/g, '')) || 0,
+                    lugaresReservados: cantidadLugares, // <--- NUEVO: Guarda cuántos compró
+                    total: totalFinal, // <--- MODIFICADO: Guarda el total real multiplicado
                     fechaCompra: new Date().toISOString(),
-                    estatus: "Pendiente Pago" 
-                });
-
-                // --- NUEVA LÓGICA: REDIRECCIÓN A MERCADO PAGO ---
-                if (datosReservaPendiente.urlPago && datosReservaPendiente.urlPago.trim() !== "") {
-                    window.open(datosReservaPendiente.urlPago, '_blank');
-                    window.cerrarModal();
-                    window.mostrarNotificacion("Redirigiendo a Mercado Pago...");
-                } else {
-                    window.mostrarNotificacion("Error: Este tour no tiene un enlace de pago configurado.", true);
-                }
-
-            } catch (error) {
-                console.error("Error:", error);
-                window.mostrarNotificacion("Ocurrió un error al procesar tu reserva.", true);
-            } finally {
-                btnConfirmar.disabled = false;
-                btnConfirmar.innerText = "Confirmar y Pagar";
-            }
-        });
-    }
-});
