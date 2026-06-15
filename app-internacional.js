@@ -158,7 +158,13 @@ window.abrirModalReserva = async (btn) => {
         const btnReservar = document.getElementById('btn-confirmar-reserva'); 
 
         if (checkbox) checkbox.checked = false;   
-        if (btnReservar) btnReservar.disabled = true; 
+        
+        // Se aplicó la misma estructura del primer código para inhabilitar por completo
+        if (btnReservar) {
+            btnReservar.disabled = true; 
+            btnReservar.classList.add("opacity-50");
+            btnReservar.innerText = "Confirmar y Pagar";
+        }
 
         // BLINDAJE: Solo remueve 'hidden' si encuentra el ID del modal
         const modalPoliticas = document.getElementById('modal-politicas');
@@ -173,6 +179,7 @@ window.abrirModalReserva = async (btn) => {
         alert("Error al cargar modal: " + error.message);
     }
 };
+
 
 
 //boton reserva confirmada
