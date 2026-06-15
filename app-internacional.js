@@ -154,17 +154,23 @@ window.abrirModalReserva = async (btn) => {
         }
 
         // === RESETEO AL ABRIR ===
-        const checkbox = document.getElementById('check-inter-terminos'); 
-        const btnReservar = document.getElementById('btn-confirmar-reserva'); 
+        const checkboxInter = document.getElementById('check-inter-terminos');
+const btnConfirmarInter = document.getElementById('btn-confirmar-reserva');
 
-        if (checkbox) checkbox.checked = false;   
-        
-        // Se aplicó la misma estructura del primer código para inhabilitar por completo
-        if (btnReservar) {
-            btnReservar.disabled = true; 
-            btnReservar.classList.add("opacity-50");
-            btnReservar.innerText = "Confirmar y Pagar";
+if (checkboxInter && btnConfirmarInter) {
+    checkboxInter.addEventListener('change', () => {
+        if (checkboxInter.checked) {
+            // Cuando se acepta: se habilita y recupera el color total
+            btnConfirmarInter.disabled = false;
+            btnConfirmarInter.classList.remove('opacity-50');
+        } else {
+            // Si lo desmarcan: se vuelve a bloquear y a poner gris
+            btnConfirmarInter.disabled = true;
+            btnConfirmarInter.classList.add('opacity-50');
         }
+    });
+}
+
 
         // BLINDAJE: Solo remueve 'hidden' si encuentra el ID del modal
         const modalPoliticas = document.getElementById('modal-politicas');
