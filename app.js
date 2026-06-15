@@ -197,3 +197,33 @@ document.addEventListener("DOMContentLoaded", () => {
                     lugaresReservados: cantidadLugares, // <--- NUEVO: Guarda cuántos compró
                     total: totalFinal, // <--- MODIFICADO: Guarda el total real multiplicado
                     fechaCompra: new Date().toISOString(),
+                    estatus: "Pendiente Pago"
+                });
+
+                // --- NUEVO: Actualizar de forma atómica los cupos del partido en Firebase ---
+                if (datosReservaPendiente.id) {
+                    const partidoRef = doc(db, "partidos", datosReservaPendiente.id);
+                    await updateDoc(partidoRef, {
+                        cupo_disponible: increment(cantidadLugares)
+                    });
+                }
+
+                // --- NUEVO: Redirección final al link de Mercado Pago ---
+                if (datosReservaPendiente.urlPago && datosReservaPendiente.urlPago.trim() !== "") {
+                    window.open(datosReservaPendiente.urlPago, '_blank');
+                    window.cerrarModal();
+                    window.mostrarNotificacion("Redirigiendo a Mercado Pago...");
+                } else {
+                    window.mostrarNotificacion("Error: Este tour no tiene un enlace de pago configurado.", true);
+                }
+
+            } catch (error) {
+                console.error("Error al procesar reserva:", error);
+                window.mostrarNotificacion("Ocurrió un error al procesar tu reserva.", true);
+            } finally {
+                btnConfirmar.disabled = false;
+                btnConfirmar.innerText = "Confirmar y Pagar";
+            }
+        });
+    }
+});
