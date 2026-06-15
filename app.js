@@ -7,7 +7,7 @@ import {
     collection,
     onSnapshot,
     addDoc,
-    increment // <--- NUEVO: Importado para actualizar la barra de progreso de forma segura
+    increment 
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 // --- 1. Estado Global ---
@@ -15,7 +15,6 @@ let datosReservaPendiente = null;
 
 // --- 2. Funciones de Interfaz (UI) ---
 
-// Actualiza los textos de una tarjeta específica cuando llegan datos de Firebase
 function actualizarTarjetaUI(card, data) {
     const mapeo = {
         '.tour-titulo': data.titulo,
@@ -35,7 +34,6 @@ function actualizarTarjetaUI(card, data) {
         }
     }
     
-    // Actualizar barra de progreso
     const bar = card.querySelector('.tour-progress-bar');
     const txt = card.querySelector('.tour-porcentaje-texto');
     if (bar && txt) {
@@ -54,7 +52,8 @@ window.cerrarModal = () => {
     if (modal) modal.classList.add('hidden');
 };
 
-window.reservarTour = (id, nombre, fecha, precio, urlPago) => { // <--- MODIFICADO: Ahora recibe el id del partido
+// MODIFICADO: Ahora recibe el parámetro 'aparta'
+window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta) => { 
     if (!auth || !auth.currentUser) {
         window.mostrarNotificacion("Por favor, inicia sesión para reservar.", true);
         return;
@@ -69,13 +68,15 @@ window.reservarTour = (id, nombre, fecha, precio, urlPago) => { // <--- MODIFICA
         btn.innerText = "Confirmar y Pagar";
     }
 
-    datosReservaPendiente = { id, nombre, fecha, precio, urlPago }; // <--- Guardamos el id en el estado global
+    // MODIFICADO: Guardamos 'aparta' dentro del estado global
+    datosReservaPendiente = { id, nombre, fecha, precio, urlPago, aparta }; 
 
-    // --- NUEVO: Resetear el selector a 1 lugar y poner el precio base al abrir el modal ---
     const selectLugares = document.getElementById('select-lugares');
     const totalPagoTxt = document.getElementById('modal-total-pago');
     if (selectLugares) selectLugares.value = "1";
-    if (totalPagoTxt) totalPagoTxt.innerText = precio;
+    
+    // MODIFICADO: El modal ahora arranca mostrando el precio de apartado
+    if (totalPagoTxt) totalPagoTxt.innerText = aparta; 
 
     const modal = document.getElementById('modal-informacion');
     if (modal) modal.classList.remove('hidden');
@@ -83,12 +84,14 @@ window.reservarTour = (id, nombre, fecha, precio, urlPago) => { // <--- MODIFICA
 
 window.prepararReserva = (boton) => {
     const card = boton.closest('.card-hover');
-    const id = card.getAttribute('data-id'); // <--- NUEVO: Captura el ID único del partido
+    const id = card.getAttribute('data-id'); 
     const nombre = card.querySelector('.tour-titulo').innerText;
     const fecha = card.querySelector('.tour-fecha-partido').innerText;
     const precio = card.querySelector('.tour-precio').innerText;
-    const urlPago = boton.getAttribute('data-url'); // <--- Aquí captura el link de Mercado Pago
-    window.reservarTour(id, nombre, fecha, precio, urlPago); // <--- Enviamos el id
+    const aparta = card.querySelector('.tour-aparta').innerText; // <--- NUEVO: Captura el valor de apartado de la tarjeta
+    const urlPago = boton.getAttribute('data-url'); 
+    
+    window.reservarTour(id, nombre, fecha, precio, urlPago, aparta); // <--- MODIFICADO: Se pasa el apartado
 };
 
 window.guardarCambiosTour = async function(btn) {
@@ -137,7 +140,6 @@ window.guardarCambiosTour = async function(btn) {
     }
 };
 
-
 // --- 4. Firebase y Inicialización ---
 
 const initPartidos = () => {
@@ -156,15 +158,15 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const btnConfirmar = document.getElementById('btn-confirmar');
     const checkbox = document.getElementById('check-terminos');
-    const selectLugares = document.getElementById('select-lugares'); // <--- NUEVO
-    const totalPagoTxt = document.getElementById('modal-total-pago'); // <--- NUEVO
+    const selectLugares = document.getElementById('select-lugares'); 
+    const totalPagoTxt = document.getElementById('modal-total-pago'); 
 
-    // --- NUEVO: Multiplicar el total en la interfaz del modal al cambiar cantidad de lugares ---
+    // --- Multiplicar el total en la interfaz del modal al cambiar cantidad de lugares ---
     if (selectLugares && totalPagoTxt) {
         selectLugares.addEventListener('change', () => {
             if (!datosReservaPendiente) return;
-            // MODIFICADO: Ahora toma el valor de 'apartar' en lugar de 'precio'
-            const precioUnitario = parseFloat(String(datosReservaPendiente.apartar).replace(/[^0-9.]/g, '')) || 0;
+            // MODIFICADO: Usa 'aparta' en lugar de 'precio'
+            const precioUnitario = parseFloat(String(datosReservaPendiente.aparta).replace(/[^0-9.]/g, '')) || 0;
             const cantidad = parseInt(selectLugares.value) || 1;
             const totalCalculado = precioUnitario * cantidad;
             totalPagoTxt.innerText = `$${totalCalculado.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -184,25 +186,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 btnConfirmar.disabled = true;
                 btnConfirmar.innerText = "Procesando...";
 
-                // --- NUEVO: Calcular los lugares y el total final multiplicado ---
                 const cantidadLugares = selectLugares ? parseInt(selectLugares.value) : 1;
-                // MODIFICADO: Ahora toma el valor de 'apartar' en lugar de 'precio'
-                const precioUnitario = parseFloat(String(datosReservaPendiente.apartar).replace(/[^0-9.]/g, '')) || 0;
+                // MODIFICADO: Usa 'aparta' en lugar de 'precio' para calcular el total final de Firebase
+                const precioUnitario = parseFloat(String(datosReservaPendiente.aparta).replace(/[^0-9.]/g, '')) || 0;
                 const totalFinal = precioUnitario * cantidadLugares;
 
-                // Se sigue guardando el registro en Firebase con estatus "Pendiente Pago"
                 await addDoc(collection(db, "pedidos"), {
                     userId: auth.currentUser.uid,
                     userEmail: auth.currentUser.email,
                     partido: datosReservaPendiente.nombre,
                     fechaPartido: datosReservaPendiente.fecha,
-                    lugaresReservados: cantidadLugares, // <--- NUEVO: Guarda cuántos compró
-                    total: totalFinal, // <--- MODIFICADO: Guarda el total real multiplicado
+                    lugaresReservados: cantidadLugares, 
+                    total: totalFinal, // Guarda el total multiplicado basado en el apartado
                     fechaCompra: new Date().toISOString(),
                     estatus: "Pendiente Pago"
                 });
 
-                // --- NUEVO: Actualizar de forma atómica los cupos del partido en Firebase ---
                 if (datosReservaPendiente.id) {
                     const partidoRef = doc(db, "partidos", datosReservaPendiente.id);
                     await updateDoc(partidoRef, {
@@ -210,7 +209,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                 }
 
-                // --- NUEVO: Redirección final al link de Mercado Pago ---
                 if (datosReservaPendiente.urlPago && datosReservaPendiente.urlPago.trim() !== "") {
                     window.open(datosReservaPendiente.urlPago, '_blank');
                     window.cerrarModal();
