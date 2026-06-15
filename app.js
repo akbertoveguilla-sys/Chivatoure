@@ -163,7 +163,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (selectLugares && totalPagoTxt) {
         selectLugares.addEventListener('change', () => {
             if (!datosReservaPendiente) return;
-            const precioUnitario = parseFloat(String(datosReservaPendiente.precio).replace(/[^0-9.]/g, '')) || 0;
+            // MODIFICADO: Ahora toma el valor de 'apartar' en lugar de 'precio'
+            const precioUnitario = parseFloat(String(datosReservaPendiente.apartar).replace(/[^0-9.]/g, '')) || 0;
             const cantidad = parseInt(selectLugares.value) || 1;
             const totalCalculado = precioUnitario * cantidad;
             totalPagoTxt.innerText = `$${totalCalculado.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -185,7 +186,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // --- NUEVO: Calcular los lugares y el total final multiplicado ---
                 const cantidadLugares = selectLugares ? parseInt(selectLugares.value) : 1;
-                const precioUnitario = parseFloat(String(datosReservaPendiente.precio).replace(/[^0-9.]/g, '')) || 0;
+                // MODIFICADO: Ahora toma el valor de 'apartar' en lugar de 'precio'
+                const precioUnitario = parseFloat(String(datosReservaPendiente.apartar).replace(/[^0-9.]/g, '')) || 0;
                 const totalFinal = precioUnitario * cantidadLugares;
 
                 // Se sigue guardando el registro en Firebase con estatus "Pendiente Pago"
