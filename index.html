@@ -559,16 +559,17 @@
 <!-- INICIO DE LISTA DE PARTIDOS -->
 
 <!-- JORNADA 1: CHIVAS VS TOLUCA -->
-<div id="partido-toluca" data-id="tour_toluca" class="bg-gray-800/60 backdrop-blur border border-gray-700 rounded-2xl p-5 shadow-lg flex flex-col gap-4 card-hover">
+<<div id="partido-toluca" data-id="tour_toluca" class="bg-gray-800/60 backdrop-blur border border-gray-700 rounded-2xl p-5 shadow-lg flex flex-col gap-4 card-hover">
     <div class="admin-controls hidden p-4 border border-red-500 rounded-lg space-y-2 mb-4 bg-gray-900">
         <input type="text" class="input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título (Ej: Chivas vs Toluca)">
         <input type="text" class="input-fecha-partido w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha del Partido">
         <input type="text" class="input-fecha-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha de Salida (Ej: 18 Jul | 06:00 AM)">
         <textarea class="input-puntos w-full bg-gray-700 text-white p-2 rounded h-24" placeholder="Puntos de Salida (CDMX)"></textarea>
         <div class="flex gap-2">
-            <input type="number" class="input-precio w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Precio Total">
-            <input type="number" class="input-ocupados w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
-            <input type="number" class="input-totales w-1/4 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+            <input type="number" class="input-precio w-1/3 bg-gray-700 text-white p-2 rounded" placeholder="Precio Total">
+            <input type="number" class="input-aparta w-1/3 bg-gray-700 text-white p-2 rounded" placeholder="Aparta con">
+            <input type="number" class="input-ocupados w-1/6 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="input-totales w-1/6 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
         </div>
         <button onclick="guardarCambiosTour(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
     </div>
@@ -607,7 +608,7 @@
  <div class="text-[11px] text-yellow-500 text-right"> Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
     <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
         <div class="flex gap-4">
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$500</p></div>
+            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$<span class="tour-aparta">500</span></p></div>
             <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">2,500</span></p></div>
         </div>
      <button 
