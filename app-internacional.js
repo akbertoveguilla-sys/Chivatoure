@@ -158,6 +158,7 @@ window.abrirModalReserva = async (btn) => {
     }
 };
 
+
 //boton reserva confirmada
 window.confirmarReservaInternacional = async (btn) => {
     // 1. Validamos el checkbox
@@ -175,12 +176,16 @@ window.confirmarReservaInternacional = async (btn) => {
     }
 
     try {
+        // Obtenemos el título desde el atributo data-titulo del botón
+        const tituloViaje = btn.dataset.titulo || "Viaje Internacional";
+
         // --- LÓGICA DE WHATSAPP ---
         const numeroWhatsApp = "5215518102711"; // Tu número registrado
         const mensaje = `¡Hola! 👋\n` +
                         `Quiero solicitar mi reservación internacional.\n\n` +
                         `Datos:\n` +
-                        `- Usuario: ${user.email}\n` +
+                        `- Viaje: ${tituloViaje}\n` +
+                        `- Nombre: ${user.displayName || 'Usuario registrado'}\n` +
                         `- Estado: Acepté términos y condiciones.\n\n` +
                         `¿Me podrían proporcionar los datos para el depósito o pago con tarjeta?`;
 
