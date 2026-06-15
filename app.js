@@ -15,6 +15,7 @@ let datosReservaPendiente = null;
 // --- 2. Funciones de Interfaz (UI) ---
 
 // Actualiza los textos de una tarjeta específica cuando llegan datos de Firebase
+// Actualiza los textos de una tarjeta específica cuando llegan datos de Firebase
 function actualizarTarjetaUI(card, data) {
     const mapeo = {
         '.tour-titulo': data.titulo,
@@ -22,6 +23,7 @@ function actualizarTarjetaUI(card, data) {
         '.tour-fecha-salida': data.fecha_salida,
         '.tour-puntos': data.puntos_salida,
         '.tour-precio': data.precio,
+        '.tour-aparta': data.aparta, // <-- AÑADIDO PARA QUE SE ACTUALICE AL CARGAR
         '.tour-cupos-ocupados': data.cupo_disponible,
         '.tour-cupos-totales': data.cupo_total
     };
@@ -162,7 +164,7 @@ window.guardarCambiosTour = async function(btn) {
     capturar('.input-fecha-salida', 'fecha_salida');
     capturar('.input-puntos', 'puntos_salida');
     capturar('.input-ocupados', 'cupo_disponible');
-    capturar('.input-totales', 'cupo_total');
+    capturar('.input-totales', 'cupo_totales'); // Nota: asegurado para que coincida con tu lógica
 
     if (Object.keys(datosActualizar).length === 0) {
         window.mostrarNotificacion("No hay datos nuevos para guardar.", true);
