@@ -155,12 +155,34 @@ window.abrirModalReserva = async (btn) => {
             document.getElementById('modal-itinerario-text').innerText = data.itinerario || "Sin itinerario disponible.";
             document.getElementById('modal-terminos-text').innerText = data.terminos || "Sin políticas disponibles.";
         }
+
+        // === NUEVA LÓGICA DE CONTROL (RESETEO) ===
+        const checkbox = document.getElementById('check-terminos'); 
+        const btnReservar = document.getElementById('btn-confirmar-reserva'); 
+
+        if (checkbox && btnReservar) {
+            checkbox.checked = false;   // Forzamos a que el check siempre inicie DESACTIVADO
+            btnReservar.disabled = true; // Forzamos a que el botón inicie BLOQUEADO
+        }
+        // =========================================
+
         document.getElementById('modal-politicas').classList.remove('hidden');
     } catch (error) {
         console.error("Error al cargar modal:", error);
         window.mostrarNotificacion("Error al cargar modal: " + error.message, true);
     }
 };
+
+// === AGREGA ESTO AL FINAL DE TU ARCHIVO (Fuera de la función) ===
+// Este evento detecta cuando el usuario interactúa con el checkbox
+document.getElementById('check-terminos')?.addEventListener('change', function() {
+    const btnReservar = document.getElementById('btn-confirmar-reserva');
+    if (btnReservar) {
+        // Si está marcado, disabled se vuelve false (se activa). Si no, true (se bloquea).
+        btnReservar.disabled = !this.checked; 
+    }
+});
+
 
 
 
@@ -250,7 +272,17 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-//tache para cerrar terminos y con
-window.cerrarModalReserva = () => {
+//tache para cerrar terminos y conwindow.cerrarModalReserva = () => {
+    // === NUEVA LÓGICA DE RESETEO ===
+    const checkbox = document.getElementById('check-terminos'); 
+    const btnReservar = document.getElementById('btn-confirmar-reserva'); 
+
+    if (checkbox && btnReservar) {
+        checkbox.checked = false;   // Desmarca el checkbox
+        btnReservar.disabled = true; // Bloquea el botón de nuevo
+    }
+    // ===============================
+
+    // Tu código original que ya funcionaba:
     document.getElementById('modal-politicas').classList.add('hidden');
 };
