@@ -243,11 +243,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnReservar = document.getElementById('btn-confirmar-reserva');
     
     if (checkbox && btnReservar) {
+        // Aseguramos que inicien apagados desde que carga la página
+        checkbox.checked = false;
+        btnReservar.disabled = true;
+
         checkbox.addEventListener('change', function() {
             btnReservar.disabled = !this.checked;
         });
     }
 });
+
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
