@@ -13,7 +13,12 @@ import {
     doc, 
     getDoc, 
     setDoc, 
-    updateDoc 
+    updateDoc,
+    collection,
+    query,
+    where,
+    orderBy,
+    getDocs 
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 // --- FUNCIÓN ÚNICA DE NOTIFICACIÓN ---
@@ -181,6 +186,84 @@ window.abrirCorreo = () => {
     navigator.clipboard.writeText("linearojiblanca@gmail.com").then(() => {
         mostrarNotificacion("Correo copiado al portapapeles");
     });
+};
+
+// --- LO NUEVO: FUNCIÓN PARA RENDERIZAR PEDIDOS DE CHIVATOURS ---
+window.cargarPedidos = async () => {
+    const contenedorPedidos = document.getElementById('contenedor-mis-pedidos');
+    if (!contenedorPedidos) return;
+
+    if (!auth.currentUser) {
+        contenedorPedidos.innerHTML = `
+            <div class="text-center py-12">
+                <p class="text-gray-400">Inicia sesión para ver tu historial de viajes y boletos.</p>
+            </div>
+        `;
+        return;
+    }
+
+    contenedorPedidos.innerHTML = `<div class="text-white text-center py-8">Cargando tus Chivatours...</div>`;
+
+    try {
+        // Consulta modular v9 filtrando por el UID del usuario logueado
+        const q = query(
+            collection(db, "pedidos"),
+            where("userId", "==", auth.currentUser.uid),
+            orderBy("fechaCreacion", "desc")
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            contenedorPedidos.innerHTML = `
+                <div class="text-center py-12 border border-dashed border-gray-700 rounded-3xl bg-gray-800/20">
+                    <p class="text-gray-400">Aún no tienes ningún viaje reservado. ¡Elige tu próximo partido!</p>
+                </div>
+            `;
+            return;
+        }
+
+        let htmlContenido = "";
+
+        querySnapshot.forEach((docSnap) => {
+            const pedido = docSnap.data();
+            
+            let colorEstatus = "bg-yellow-900/50 text-yellow-400 border-yellow-600";
+            if (pedido.estatus === "Pagado" || pedido.estatus === "Confirmado") {
+                colorEstatus = "bg-green-900/50 text-green-400 border-green-600";
+            }
+
+            htmlContenido += `
+                <div class="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition hover:border-red-600/50 w-full mb-4">
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <h4 class="text-xl font-black text-white">${pedido.nombreTour || 'Chivatour'}</h4>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-full border ${colorEstatus}">
+                                ${pedido.estatus || 'Pendiente'}
+                            </span>
+                        </div>
+                        <p class="text-gray-400 text-sm mt-1">🗓️ Fecha de viaje: <span class="text-gray-200 font-semibold">${pedido.fechaTour || ''}</span></p>
+                        <p class="text-gray-500 text-xs mt-1">ID Reserva: ${docSnap.id}</p>
+                    </div>
+                    
+                    <div class="text-left md:text-right w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0 border-gray-700">
+                        <p class="text-xs text-gray-400">Total: <span class="text-sm font-bold text-white">${pedido.precioTotal || ''}</span></p>
+                        <p class="text-sm text-red-400 font-bold mt-1">Apartado con: ${pedido.montoApartado || ''}</p>
+                    </div>
+                </div>
+            `;
+        });
+
+        contenedorPedidos.innerHTML = htmlContenido;
+
+    } catch (error) {
+        console.error("Error al obtener pedidos:", error);
+        contenedorPedidos.innerHTML = `
+            <p class="text-red-500 text-center py-4">
+                Hubo un error al cargar tus pedidos. Si es la primera vez que lo usas, revisa la consola para habilitar los índices compuestos de Firestore.
+            </p>
+        `;
+    }
 };
 
 // 10. ESTADO DE SESIÓN
