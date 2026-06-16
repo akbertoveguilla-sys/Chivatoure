@@ -288,3 +288,72 @@ onAuthStateChanged(auth, async (user) => {
         btn.onclick = () => window.toggleLoginModal();
     }
 });
+
+
+
+async function cargarMisPedidos(userId) {
+    const contenedorPedidos = document.getElementById('contenedor-mis-pedidos');
+    if (!contenedorPedidos) return;
+
+    // Ponemos un loader temporal mientras descarga de Firebase
+    contenedorPedidos.innerHTML = `<div class="text-white text-center py-8">Cargando tus Chivatours...</div>`;
+
+    try {
+        // Consulta filtrada por el userId del usuario actual ordenado por fecha de creación
+        const snapshot = await db.collection("pedidos")
+                                   .where("userId", "==", userId)
+                                   .orderBy("fechaCreacion", "desc")
+                                   .get();
+
+        if (snapshot.empty) {
+            contenedorPedidos.innerHTML = `
+                <div class="text-center py-12 border border-dashed border-gray-700 rounded-3xl bg-gray-800/20">
+                    <p class="text-gray-400">Aún no tienes ningún viaje reservado. ¡Elige tu próximo partido!</p>
+                </div>
+            `;
+            return;
+        }
+
+        let htmlContenido = "";
+
+        snapshot.forEach((doc) => {
+            const pedido = doc.data();
+            
+            // Definimos el color del badge según el estatus
+            let colorEstatus = "bg-yellow-900/50 text-yellow-400 border-yellow-600";
+            if (pedido.estatus === "Pagado" || pedido.estatus === "Confirmado") {
+                colorEstatus = "bg-green-900/50 text-green-400 border-green-600";
+            }
+
+            // Estructura de tarjeta adaptada a tu diseño Rojiblanco
+            htmlContenido += `
+                <div class="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition hover:border-red-600/50">
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <h4 class="text-xl font-black text-white">${pedido.nombreTour}</h4>
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-full border ${colorEstatus}">
+                                ${pedido.estatus}
+                            </span>
+                        </div>
+                        <p class="text-gray-400 text-sm mt-1">🗓️ Fecha de viaje: <span class="text-gray-200 font-semibold">${pedido.fechaTour}</span></p>
+                        <p class="text-gray-500 text-xs mt-1">ID Reserva: ${doc.id}</p>
+                    </div>
+                    
+                    <div class="text-left md:text-right w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0 border-gray-700">
+                        <p class="text-xs text-gray-400">Total: <span class="text-sm font-bold text-white">${pedido.precioTotal}</span></p>
+                        <p class="text-sm text-red-400 font-bold mt-1">Apartado con: ${pedido.montoApartado}</p>
+                    </div>
+                </div>
+            `;
+        });
+
+        contenedorPedidos.innerHTML = `<div class="space-y-4">${htmlContenido}</div>`;
+
+    } catch (error) {
+        console.error("Error al obtener pedidos:", error);
+        contenedorPedidos.innerHTML = `<p class="text-red-500 text-center">Hubo un error al cargar tus pedidos. Si es la primera vez que lo corres, verifica si Firestore requiere que crees un índice compuesto.</p>`;
+    }
+}
+
+
+
