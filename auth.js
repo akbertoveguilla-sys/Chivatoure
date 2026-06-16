@@ -89,7 +89,9 @@ window.registrarse = async () => {
     const confirmPassInput = document.getElementById('reg-pass-confirm');
 
     if (nombre.length < 8) { mostrarNotificacion("⚠️ Nombre corto (min 8 car.)", true); return; }
-    if (celular.length < 10) { mostrarNotificacion("⚠️ Celular inválido", true); return; }
+    
+    // CAMBIO: Validación estricta de 10 dígitos exactos
+    if (celular.length !== 10) { mostrarNotificacion("⚠️ El celular debe tener 10 dígitos", true); return; }
     
     if (passInput.value !== confirmPassInput.value) {
         mostrarNotificacion("⚠️ Las contraseñas no coinciden", true);
@@ -167,7 +169,10 @@ window.cambiarNombre = async (event) => {
 
 window.cambiarCelular = async (event) => {
     const nuevoCelular = document.getElementById('input-nuevo-celular').value.trim();
-    if (nuevoCelular.length < 10) { mostrarNotificacion("⚠️ Celular inválido", true); return; }
+    
+    // CAMBIO: Validación estricta de 10 dígitos exactos al editar
+    if (nuevoCelular.length !== 10) { mostrarNotificacion("⚠️ El celular debe tener 10 dígitos", true); return; }
+    
     try {
         await updateDoc(doc(db, "users", auth.currentUser.uid), { celular: nuevoCelular });
         mostrarNotificacion("✅ Número actualizado");
@@ -361,7 +366,6 @@ onAuthStateChanged(auth, async (user) => {
         if (btnNotas) btnNotas.classList.add('hidden');
         if (btn) {
             btn.innerHTML = '<i class="fa-solid fa-user"></i> <span class="hidden sm:inline">Ingresar</span>';
-            // SOLUCIÓN AQUÍ: Abre el modal y fuerza a que muestre la sección del formulario de login
             btn.onclick = () => { 
                 window.toggleLoginModal(); 
                 window.showView('view-login'); 
@@ -373,6 +377,23 @@ onAuthStateChanged(auth, async (user) => {
 // DISPARADORES INICIALES DE LA PÁGINA
 document.addEventListener('DOMContentLoaded', () => {
     vincularBotones();
+
+    // --- NUEVA SECCIÓN: RESTRICCIÓN EN TIEMPO REAL PARA CELULARES ---
+    const configurarRestriccionCelular = (idInput) => {
+        const input = document.getElementById(idInput);
+        if (input) {
+            input.setAttribute('maxLength', '10'); // Bloquea escribir más de 10 letras/números
+            input.addEventListener('input', (e) => {
+                // Borra automáticamente cualquier letra o símbolo que no sea número
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+        }
+    };
+    
+    // Aplicamos el bloqueador al input de registro y al de edición
+    configurarRestriccionCelular('reg-celular');
+    configurarRestriccionCelular('input-nuevo-celular');
+    // ---------------------------------------------------------------
 
     const seccionInicio = document.getElementById('page-inicio');
     if (seccionInicio) {
