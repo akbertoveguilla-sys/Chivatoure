@@ -228,3 +228,37 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+
+
+
+
+// Guardar una nota individual en Firebase
+window.guardarNotaAdmin = async (id) => {
+    const titulo = document.getElementById(`nota-titulo-${id}`).value.trim();
+    const texto = document.getElementById(`nota-texto-${id}`).value.trim();
+
+    try {
+        // Guardamos o actualizamos solo la casilla correspondiente usando setDoc con { merge: true }
+        await setDoc(doc(db, "admin", "bloque_notas"), {
+            [`nota_${id}`]: {
+                titulo: titulo,
+                texto: texto,
+                ultimaActualizacion: new Date()
+            }
+        }, { merge: true });
+
+        window.mostrarNotificacion(`✅ Nota #${id} guardada correctamente.`);
+    } catch (error) {
+        console.error("Error al guardar la nota:", error);
+        window.mostrarNotificacion("❌ Error al guardar la nota en la base de datos", true);
+    }
+};
+
+
+
+
+
+
+
+
