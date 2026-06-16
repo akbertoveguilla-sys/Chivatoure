@@ -235,7 +235,7 @@ window.cargarPedidos = async () => {
             
             // FILTRO ESTRICTO: 
             // 1. Debe ser obligatoriamente tu UID.
-            // 2. Debe poseer un estatus real de confirmación (evita basura o clicks cancelados en la base de datos).
+            // 2. Debe poseer un estatus real de confirmation (evita basura o clicks cancelados en la base de datos).
             const estatusValidos = ["Pendiente Pago", "Pagado", "Confirmado"];
             
             if (data.userId === auth.currentUser.uid && estatusValidos.includes(data.estatus)) {
@@ -315,6 +315,8 @@ window.cargarPedidos = async () => {
 // 10. ESTADO DE SESIÓN
 onAuthStateChanged(auth, async (user) => {
     const btn = document.getElementById('auth-btn');
+    const btnNotas = document.getElementById('btn-notas');
+
     if (user) {
         if (btn) {
             btn.innerHTML = '<i class="fa-solid fa-user"></i> <span class="hidden sm:inline display-nombre">Mi Cuenta</span>';
@@ -326,14 +328,27 @@ onAuthStateChanged(auth, async (user) => {
                 const data = docSnap.data();
                 document.querySelectorAll('.display-nombre').forEach(el => el.innerText = data.nombre);
                 document.querySelectorAll('.display-celular').forEach(el => el.innerText = data.celular || "No disponible");
+                
+                // --- AJUSTE NUEVO: Muestra o esconde el botón según el rol del usuario ---
+                if (btnNotas) {
+                    if (data.role === 'admin') {
+                        btnNotas.classList.remove('hidden');
+                    } else {
+                        btnNotas.classList.add('hidden');
+                    }
+                }
             }
         } catch (e) { console.error(e); }
         if (typeof window.cargarPedidos === 'function') window.cargarPedidos();
-    } else if (btn) {
-        btn.innerHTML = '<i class="fa-solid fa-user"></i> <span class="hidden sm:inline">Ingresar</span>';
-        btn.onclick = () => window.toggleLoginModal();
+    } else {
+        // --- AJUSTE NUEVO: Si no hay sesión iniciada, asegura que el botón esté oculto ---
+        if (btnNotas) {
+            btnNotas.classList.add('hidden');
+        }
+
+        if (btn) {
+            btn.innerHTML = '<i class="fa-solid fa-user"></i> <span class="hidden sm:inline">Ingresar</span>';
+            btn.onclick = () => window.toggleLoginModal();
+        }
     }
 });
-
-
-
