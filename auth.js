@@ -44,7 +44,6 @@ function togglePassword() {
     }
 }
 
-// Tu código original permanece intacto:
 window.iniciarSesion = async () => {
     const email = document.getElementById('login-email').value.trim();
     const passInput = document.getElementById('login-pass');
@@ -57,7 +56,7 @@ window.iniciarSesion = async () => {
     }
 };
 
-// 2. CAMBIO DE VISTA
+// 2. CAMBIO DE VISTA INTERNA (DASHBOARD/LOGIN/REGISTRO)
 window.showView = (viewId) => {
     const vistas = ['view-login', 'view-register', 'view-forgot', 'view-dashboard', 'view-mis-pedidos', 'view-perfil'];
     vistas.forEach(id => {
@@ -72,7 +71,7 @@ window.showView = (viewId) => {
     }
 };
 
-// 3. TOGGLE MODAL
+// 3. TOGGLE MODAL DE LOGUEO
 window.toggleLoginModal = () => {
     const modal = document.getElementById('login-modal');
     if (modal) { modal.classList.toggle('hidden'); modal.classList.toggle('flex'); }
@@ -84,12 +83,11 @@ window.registrarse = async () => {
     const email = document.getElementById('reg-email').value.trim();
     const celular = document.getElementById('reg-celular').value.trim();
     const passInput = document.getElementById('reg-pass');
-    const confirmPassInput = document.getElementById('reg-pass-confirm'); // Nuevo campo
+    const confirmPassInput = document.getElementById('reg-pass-confirm');
 
     if (nombre.length < 8) { mostrarNotificacion("⚠️ Nombre corto (min 8 car.)", true); return; }
     if (celular.length < 10) { mostrarNotificacion("⚠️ Celular inválido", true); return; }
     
-    // Nueva validación
     if (passInput.value !== confirmPassInput.value) {
         mostrarNotificacion("⚠️ Las contraseñas no coinciden", true);
         return;
@@ -97,10 +95,7 @@ window.registrarse = async () => {
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, passInput.value);
-        
-        // --- AQUÍ ESTÁ LO NUEVO ---
         await updateProfile(userCredential.user, { displayName: nombre });
-        // --------------------------
 
         await setDoc(doc(db, "users", userCredential.user.uid), {
             nombre, email, celular, role: "user", fechaRegistro: new Date()
@@ -112,7 +107,6 @@ window.registrarse = async () => {
         document.getElementById('reg-nombre').value = '';
         document.getElementById('reg-email').value = '';
     } catch (error) { 
-        // Aquí detectamos si el correo ya existe
         if (error.code === 'auth/email-already-in-use') {
             mostrarNotificacion("⚠️ Este correo ya se encuentra registrado.", true);
         } else {
@@ -121,10 +115,9 @@ window.registrarse = async () => {
     }
     finally { 
         passInput.value = ''; 
-        confirmPassInput.value = ''; // Limpiamos también el nuevo campo
+        confirmPassInput.value = ''; 
     }
 };
-
 
 // 5. CERRAR SESIÓN
 window.cerrarSesion = async () => {
@@ -187,9 +180,55 @@ window.abrirCorreo = () => {
     });
 };
 
-// --- CARGAR PEDIDOS SIN REQUERIR ÍNDICES COMPUESTOS ---
+// 10. NAVEGACIÓN PRINCIPAL DE PÁGINAS
+window.switchPage = (pageId) => {
+    document.querySelectorAll('.page-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    let target = document.getElementById('page-' + pageId);
+    if (!target) {
+        target = document.getElementById(pageId);
+    }
+    
+    if (target) {
+        target.classList.add('active');
+        console.log("Sección activada con éxito.");
+    } else {
+        console.error("Error: No encuentro el elemento con ID: 'page-" + pageId + "' ni '" + pageId + "'");
+    }
+    
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (mobileMenu) mobileMenu.classList.add('hidden');
+};
+
+// VINCULACIÓN DE BOTONES DE NAVEGACIÓN
+const vincularBotones = () => {
+    const navButtons = [
+        { id: 'btn-viajes', page: 'viajes' },
+        { id: 'btn-internacionales', page: 'internacionales' },
+        { id: 'btn-shop', page: 'shop' },
+        { id: 'btn-comunidad', page: 'comunidad' },
+        { id: 'btn-notas', page: 'admin-notes-page' }
+    ];
+
+    navButtons.forEach(btnInfo => {
+        const btn = document.getElementById(btnInfo.id);
+        if (btn) {
+            btn.addEventListener('click', () => window.switchPage(btnInfo.page));
+        }
+    });
+
+    const btnReserva = document.getElementById('btn-reservar-tour');
+    if (btnReserva) {
+        btnReserva.addEventListener('click', () => {
+             if (window.reservarTour) window.reservarTour(); 
+        });
+    }
+};
+
+// CARGAR HISTORIAL DE PEDIDOS
 window.cargarPedidos = async () => {
-    // Vinculado al id="contenedor-pedidos" de tu HTML
     const contenedorPedidos = document.getElementById('contenedor-pedidos');
     if (!contenedorPedidos) return;
 
@@ -208,17 +247,10 @@ window.cargarPedidos = async () => {
             <p class="text-xs">Cargando tus Chivatours...</p>
         </div>
     `;
-    console.log("[Pedidos] Solicitando viajes para el UID:", auth.currentUser.uid);
 
     try {
-        // Consulta base filtrada por el usuario
-        const q = query(
-            collection(db, "pedidos"),
-            where("userId", "==", auth.currentUser.uid)
-        );
-
+        const q = query(collection(db, "pedidos"), where("userId", "==", auth.currentUser.uid));
         const querySnapshot = await getDocs(q);
-        console.log("[Pedidos] Respuesta recibida de Firestore. Documentos totales encontrados:", querySnapshot.size);
 
         if (querySnapshot.empty) {
             contenedorPedidos.innerHTML = `
@@ -232,18 +264,12 @@ window.cargarPedidos = async () => {
         const listaPedidos = [];
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
-            
-            // FILTRO ESTRICTO: 
-            // 1. Debe ser obligatoriamente tu UID.
-            // 2. Debe poseer un estatus real de confirmation (evita basura o clicks cancelados en la base de datos).
             const estatusValidos = ["Pendiente Pago", "Pagado", "Confirmado"];
-            
             if (data.userId === auth.currentUser.uid && estatusValidos.includes(data.estatus)) {
                 listaPedidos.push({ id: docSnap.id, ...data });
             }
         });
 
-        // Si después de limpiar los borradores o pruebas la lista queda vacía
         if (listaPedidos.length === 0) {
             contenedorPedidos.innerHTML = `
                 <div class="text-center py-12 border border-dashed border-gray-700 rounded-3xl bg-gray-800/20">
@@ -253,25 +279,21 @@ window.cargarPedidos = async () => {
             return;
         }
 
-        // Ordenamos por fecha de compra/creación descendente (Los más recientes primero)
         listaPedidos.sort((a, b) => {
             const fechaA = a.fechaCompra || a.fechaCreacion || 0;
             const fechaB = b.fechaCompra || b.fechaCreacion || 0;
-            
             const tiempoA = fechaA.seconds ? fechaA.seconds * 1000 : new Date(fechaA).getTime();
             const tiempoB = fechaB.seconds ? fechaB.seconds * 1000 : new Date(fechaB).getTime();
             return tiempoB - tiempoA;
         });
 
         let htmlContenido = "";
-
         listaPedidos.forEach((pedido) => {
             let colorEstatus = "bg-yellow-900/50 text-yellow-400 border-yellow-600";
             if (pedido.estatus === "Pagado" || pedido.estatus === "Confirmado") {
                 colorEstatus = "bg-green-900/50 text-green-400 border-green-600";
             }
 
-            // Mapeo seguro e inteligente de los campos que vengan de app.js
             const nombreTour = pedido.partido || pedido.nombreTour || 'Chivatour';
             const fechaTour = pedido.fechaPartido || pedido.fechaTour || 'No especificada';
             const precioTotal = pedido.total || pedido.precioTotal || 'N/A';
@@ -289,7 +311,6 @@ window.cargarPedidos = async () => {
                         <p class="text-gray-400 text-sm mt-1">🗓️ Fecha de viaje: <span class="text-gray-200 font-semibold">${fechaTour}</span></p>
                         <p class="text-gray-500 text-xs mt-1">ID Reserva: ${pedido.id}</p>
                     </div>
-                    
                     <div class="text-left md:text-right w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0 border-gray-700">
                         <p class="text-xs text-gray-400">Total: <span class="text-sm font-bold text-white">${precioTotal}</span></p>
                         <p class="text-sm text-red-400 font-bold mt-1">Apartado con: ${montoApartado}</p>
@@ -297,22 +318,13 @@ window.cargarPedidos = async () => {
                 </div>
             `;
         });
-
         contenedorPedidos.innerHTML = htmlContenido;
-
     } catch (error) {
-        console.error("[Pedidos] Error crítico al obtener Firestore:", error);
-        contenedorPedidos.innerHTML = `
-            <div class="text-center py-6 text-red-500">
-                ⚠️ Error al cargar los datos: ${error.message}. Revisa la consola para más detalles.
-            </div>
-        `;
+        console.error("[Pedidos] Error:", error);
     }
 };
 
-
-
-// 10. ESTADO DE SESIÓN
+// 11. OBSERVADOR DE ESTADO DE SESIÓN (Y CONTROL DE NOTAS ADMIN)
 onAuthStateChanged(auth, async (user) => {
     const btn = document.getElementById('auth-btn');
     const btnNotas = document.getElementById('btn-notas');
@@ -329,7 +341,7 @@ onAuthStateChanged(auth, async (user) => {
                 document.querySelectorAll('.display-nombre').forEach(el => el.innerText = data.nombre);
                 document.querySelectorAll('.display-celular').forEach(el => el.innerText = data.celular || "No disponible");
                 
-                // --- AJUSTE NUEVO: Muestra o esconde el botón según el rol del usuario ---
+                // Si el rol en la BD es admin, mostramos el botón de notas
                 if (btnNotas) {
                     if (data.role === 'admin') {
                         btnNotas.classList.remove('hidden');
@@ -341,107 +353,20 @@ onAuthStateChanged(auth, async (user) => {
         } catch (e) { console.error(e); }
         if (typeof window.cargarPedidos === 'function') window.cargarPedidos();
     } else {
-        // --- AJUSTE NUEVO: Si no hay sesión iniciada, asegura que el botón esté oculto ---
-        if (btnNotas) {
-            btnNotas.classList.add('hidden');
-        }
-
+        if (btnNotas) btnNotas.classList.add('hidden');
         if (btn) {
             btn.innerHTML = '<i class="fa-solid fa-user"></i> <span class="hidden sm:inline">Ingresar</span>';
             btn.onclick = () => window.toggleLoginModal();
         }
     }
-
-};
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    // Inicializa el grid de notas al cargar el sitio
-    inicializarPanelNotas();
 });
 
-function inicializarPanelNotas() {
-    const gridContenedor = document.getElementById('notes-grid');
-    if (!gridContenedor) return;
+// DISPARADORES INICIALES DE LA PÁGINA
+document.addEventListener('DOMContentLoaded', () => {
+    vincularBotones();
 
-    gridContenedor.innerHTML = ''; // Limpiar contenedor
-
-    // Bucle para construir los 9 bloques de notas independientes
-    for (let i = 1; i <= 9; i++) {
-        // Recuperar información previa guardada en el navegador
-        const tituloGuardado = localStorage.getItem(`chiva-nota-titulo-${i}`) || `Bloque de Nota #${i}`;
-        const contenidoGuardado = localStorage.getItem(`chiva-nota-txt-${i}`) || '';
-
-        const tarjetaNota = document.createElement('div');
-        tarjetaNota.className = "bg-gray-950/60 p-4 rounded-xl border border-gray-800/80 flex flex-col gap-3 transition-all duration-300 hover:border-red-600/50 shadow-md card-hover group";
-        
-        tarjetaNota.innerHTML = `
-            <div class="flex justify-between items-center border-b border-gray-800 pb-2">
-                <input type="text" id="input-titulo-${i}" value="${tituloGuardado}" 
-                    class="bg-transparent font-medium text-red-400 focus:outline-none border-b border-transparent focus:border-red-500 w-4/5 text-sm transition-colors"
-                    placeholder="Título de la nota" onchange="guardarNotaEspecifica(${i})">
-                <span class="text-[10px] text-gray-600 font-mono bg-gray-900 px-1.5 py-0.5 rounded border border-gray-800">Nota ${i}</span>
-            </div>
-            
-            <textarea id="txt-contenido-${i}" rows="6" 
-                class="w-full bg-gray-900/50 text-gray-300 p-3 rounded-lg border border-gray-800 focus:outline-none focus:border-red-600/70 resize-none text-xs leading-relaxed font-sans placeholder-gray-600 transition-colors"
-                placeholder="Escribe tus apuntes, pendientes o recordatorios aquí..."
-                oninput="actualizarIndicadorGuardado(${i})">${contenidoGuardado}</textarea>
-            
-            <div class="flex justify-between items-center mt-1">
-                <span id="status-${i}" class="text-[10px] text-gray-500 italic flex items-center gap-1">
-                    <i class="fa-solid fa-check text-gray-600"></i> Sin cambios
-                </span>
-                <button onclick="guardarNotaEspecifica(${i})" 
-                    class="bg-gray-800 hover:bg-red-600 hover:text-white text-gray-400 px-2.5 py-1 rounded-md transition-all duration-200 text-[11px] flex items-center gap-1">
-                    <i class="fa-solid fa-floppy-disk"></i> Guardar
-                </button>
-            </div>
-        `;
-        gridContenedor.appendChild(tarjetaNota);
+    const seccionInicio = document.getElementById('page-inicio');
+    if (seccionInicio) {
+        seccionInicio.classList.add('active');
     }
-}
-
-// Guarda una nota individual
-function guardarNotaEspecifica(id) {
-    const titulo = document.getElementById(`input-titulo-${id}`).value;
-    const contenido = document.getElementById(`txt-contenido-${id}`).value;
-
-    localStorage.setItem(`chiva-nota-titulo-${id}`, titulo);
-    localStorage.setItem(`chiva-nota-txt-${id}`, contenido);
-
-    const statusElement = document.getElementById(`status-${id}`);
-    statusElement.innerHTML = `<i class="fa-solid fa-circle-check text-green-500"></i> ¡Guardado!`;
-    statusElement.classList.replace('text-gray-500', 'text-green-400');
-
-    setTimeout(() => {
-        statusElement.innerHTML = `<i class="fa-solid fa-check text-gray-600"></i> Guardado`;
-        statusElement.classList.replace('text-green-400', 'text-gray-500');
-    }, 2000);
-}
-
-// Función para el botón general que guarda los 9 bloques al mismo tiempo
-function guardarTodasLasNotas() {
-    for (let i = 1; i <= 9; i++) {
-        guardarNotaEspecifica(i);
-    }
-    // Lanza notificación global (Aprovechando tus clases CSS para Toasts)
-    mostrarAvisoGlobal("Las 9 notas se guardaron correctamente");
-}
-
-function actualizarIndicadorGuardado(id) {
-    const statusElement = document.getElementById(`status-${id}`);
-    statusElement.innerHTML = `<i class="fa-solid fa-pen text-amber-500"></i> Modificando...`;
-    statusElement.classList.replace('text-gray-500', 'text-amber-400');
-}
-
-// Alerta flotante basada en tu estilo de animación '.animate-toast'
-function mostrarAvisoGlobal(texto) {
-    const toast = document.createElement('div');
-    toast.className = "fixed bottom-5 right-5 bg-gradient-to-r from-green-600 to-emerald-700 text-white px-4 py-2.5 rounded-xl shadow-2xl z-50 flex items-center gap-2 text-xs font-semibold animate-toast border border-green-500/30";
-    toast.innerHTML = `<i class="fa-solid fa-circle-check text-base"></i> ${texto}`;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2500);
-}
-    
 });
