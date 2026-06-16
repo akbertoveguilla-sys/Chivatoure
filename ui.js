@@ -9,14 +9,17 @@ window.switchPage = (pageId) => {
         section.classList.remove('active');
     });
     
-    // 2. Buscar y activar la seleccionada
-    const target = document.getElementById('page-' + pageId);
+    // 2. Buscar y activar la seleccionada (Soporta tanto 'page-id' como el 'id' directo)
+    let target = document.getElementById('page-' + pageId);
+    if (!target) {
+        target = document.getElementById(pageId);
+    }
     
     if (target) {
         target.classList.add('active'); // El CSS se encarga de mostrarla
-        console.log("Sección 'page-" + pageId + "' activada.");
+        console.log("Sección activada con éxito.");
     } else {
-        console.error("Error: No encuentro el elemento con ID: 'page-" + pageId + "'");
+        console.error("Error: No encuentro el elemento con ID: 'page-" + pageId + "' ni '" + pageId + "'");
     }
     
     // 3. Cerrar menú móvil si existe
@@ -28,12 +31,13 @@ window.switchPage = (pageId) => {
 
 // Esta función conecta los botones cuando el HTML ya existe
 const vincularBotones = () => {
-    // Lista de botones de navegación
+    // Lista de botones de navegación (Se incluye el botón de notas de admin)
     const navButtons = [
         { id: 'btn-viajes', page: 'viajes' },
         { id: 'btn-internacionales', page: 'internacionales' },
         { id: 'btn-shop', page: 'shop' },
-        { id: 'btn-comunidad', page: 'comunidad' }
+        { id: 'btn-comunidad', page: 'comunidad' },
+        { id: 'btn-notas', page: 'admin-notes-page' }
     ];
 
     navButtons.forEach(btnInfo => {
