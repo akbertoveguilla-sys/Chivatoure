@@ -37,10 +37,8 @@ window.mostrarNotificacion = (mensaje, esError = false) => {
 // 1. INICIO DE SESIÓN
 window.togglePassword = () => {
     const passInput = document.getElementById('login-pass');
-    if (passInput && passInput.type === 'password') {
-        passInput.type = 'text';
-    } else if (passInput) {
-        passInput.type = 'password';
+    if (passInput) {
+        passInput.type = passInput.type === 'password' ? 'text' : 'password';
     }
 };
 
@@ -74,7 +72,12 @@ window.showView = (viewId) => {
 // 3. TOGGLE MODAL DE LOGUEO
 window.toggleLoginModal = () => {
     const modal = document.getElementById('login-modal');
-    if (modal) { modal.classList.toggle('hidden'); modal.classList.toggle('flex'); }
+    if (modal) { 
+        modal.classList.toggle('hidden'); 
+        modal.classList.toggle('flex'); 
+    } else {
+        console.error("Error: No se encontró ningún elemento con el ID 'login-modal' en el HTML.");
+    }
 };
 
 // 4. REGISTRO
@@ -332,7 +335,10 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         if (btn) {
             btn.innerHTML = '<i class="fa-solid fa-user"></i> <span class="hidden sm:inline display-nombre">Mi Cuenta</span>';
-            btn.onclick = () => { window.toggleLoginModal(); window.showView('view-dashboard'); };
+            btn.onclick = () => { 
+                window.toggleLoginModal(); 
+                window.showView('view-dashboard'); 
+            };
         }
         try {
             const docSnap = await getDoc(doc(db, "users", user.uid));
@@ -341,7 +347,6 @@ onAuthStateChanged(auth, async (user) => {
                 document.querySelectorAll('.display-nombre').forEach(el => el.innerText = data.nombre);
                 document.querySelectorAll('.display-celular').forEach(el => el.innerText = data.celular || "No disponible");
                 
-                // Si el rol en la BD es admin, mostramos el botón de notas
                 if (btnNotas) {
                     if (data.role === 'admin') {
                         btnNotas.classList.remove('hidden');
@@ -356,8 +361,11 @@ onAuthStateChanged(auth, async (user) => {
         if (btnNotas) btnNotas.classList.add('hidden');
         if (btn) {
             btn.innerHTML = '<i class="fa-solid fa-user"></i> <span class="hidden sm:inline">Ingresar</span>';
-            // CORRECCIÓN AQUÍ: Abre el modal y fuerza la vista de login limpia
-            btn.onclick = () => { window.toggleLoginModal(); window.showView('view-login'); };
+            // SOLUCIÓN AQUÍ: Abre el modal y fuerza a que muestre la sección del formulario de login
+            btn.onclick = () => { 
+                window.toggleLoginModal(); 
+                window.showView('view-login'); 
+            };
         }
     }
 });
