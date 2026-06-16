@@ -35,14 +35,14 @@ window.mostrarNotificacion = (mensaje, esError = false) => {
 };
 
 // 1. INICIO DE SESIÓN
-function togglePassword() {
+window.togglePassword = () => {
     const passInput = document.getElementById('login-pass');
-    if (passInput.type === 'password') {
+    if (passInput && passInput.type === 'password') {
         passInput.type = 'text';
-    } else {
+    } else if (passInput) {
         passInput.type = 'password';
     }
-}
+};
 
 window.iniciarSesion = async () => {
     const email = document.getElementById('login-email').value.trim();
@@ -356,7 +356,8 @@ onAuthStateChanged(auth, async (user) => {
         if (btnNotas) btnNotas.classList.add('hidden');
         if (btn) {
             btn.innerHTML = '<i class="fa-solid fa-user"></i> <span class="hidden sm:inline">Ingresar</span>';
-            btn.onclick = () => window.toggleLoginModal();
+            // CORRECCIÓN AQUÍ: Abre el modal y fuerza la vista de login limpia
+            btn.onclick = () => { window.toggleLoginModal(); window.showView('view-login'); };
         }
     }
 });
