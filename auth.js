@@ -189,7 +189,8 @@ window.abrirCorreo = () => {
 
 // --- CARGAR PEDIDOS SIN REQUERIR ÍNDICES COMPUESTOS ---
 window.cargarPedidos = async () => {
-    const contenedorPedidos = document.getElementById('contenedor-mis-pedidos');
+    // CORREGIDO: Ahora coincide exactamente con el id="contenedor-pedidos" de tu HTML
+    const contenedorPedidos = document.getElementById('contenedor-pedidos');
     if (!contenedorPedidos) return;
 
     if (!auth.currentUser) {
@@ -201,11 +202,16 @@ window.cargarPedidos = async () => {
         return;
     }
 
-    contenedorPedidos.innerHTML = `<div class="text-white text-center py-8">Cargando tus Chivatours...</div>`;
+    contenedorPedidos.innerHTML = `
+        <div class="text-white text-center py-8">
+            <i class="fa-solid fa-spinner animate-spin text-xl mb-2 text-[#C4151C]"></i>
+            <p class="text-xs">Cargando tus Chivatours...</p>
+        </div>
+    `;
     console.log("[Pedidos] Solicitando viajes para el UID:", auth.currentUser.uid);
 
     try {
-        // Consulta limpia filtrada únicamente por userId (Usa el índice automático por defecto)
+        // Consulta limpia filtrada únicamente por userId
         const q = query(
             collection(db, "pedidos"),
             where("userId", "==", auth.currentUser.uid)
@@ -229,7 +235,7 @@ window.cargarPedidos = async () => {
             listaPedidos.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        // Ordenamos en el Frontend por fecha de compra/creación descendente (Los más recientes primero)
+        // Ordenamos por fecha de compra/creación descendente (Los más recientes primero)
         listaPedidos.sort((a, b) => {
             const fechaA = a.fechaCompra || a.fechaCreacion || 0;
             const fechaB = b.fechaCompra || b.fechaCreacion || 0;
@@ -254,7 +260,7 @@ window.cargarPedidos = async () => {
             const montoApartado = pedido.montoApartado || 'Pendiente';
 
             htmlContenido += `
-                <div class="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition hover:border-red-600/50 w-full mb-4">
+                <div class="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition hover:border-red-600/50 w-full">
                     <div>
                         <div class="flex items-center gap-3">
                             <h4 class="text-xl font-black text-white">${nombreTour}</h4>
@@ -285,6 +291,7 @@ window.cargarPedidos = async () => {
         `;
     }
 };
+
 
 
 // 10. ESTADO DE SESIÓN
