@@ -355,6 +355,8 @@ onAuthStateChanged(auth, async (user) => {
                 if (btnNotas) {
                     if (data.role === 'admin') {
                         btnNotas.classList.remove('hidden');
+                        // --- NUEVO: Carga las notas de Firebase de inmediato si es Admin ---
+                        if (typeof window.cargarNotasAdmin === 'function') window.cargarNotasAdmin();
                     } else {
                         btnNotas.classList.add('hidden');
                     }
