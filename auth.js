@@ -189,7 +189,7 @@ window.abrirCorreo = () => {
 
 // --- CARGAR PEDIDOS SIN REQUERIR ÍNDICES COMPUESTOS ---
 window.cargarPedidos = async () => {
-    // CORREGIDO: Ahora coincide exactamente con el id="contenedor-pedidos" de tu HTML
+    // Vinculado al id="contenedor-pedidos" de tu HTML
     const contenedorPedidos = document.getElementById('contenedor-pedidos');
     if (!contenedorPedidos) return;
 
@@ -211,14 +211,14 @@ window.cargarPedidos = async () => {
     console.log("[Pedidos] Solicitando viajes para el UID:", auth.currentUser.uid);
 
     try {
-        // Consulta limpia filtrada únicamente por userId
+        // Consulta base filtrada por el usuario
         const q = query(
             collection(db, "pedidos"),
             where("userId", "==", auth.currentUser.uid)
         );
 
         const querySnapshot = await getDocs(q);
-        console.log("[Pedidos] Respuesta recibida de Firestore. Documentos:", querySnapshot.size);
+        console.log("[Pedidos] Respuesta recibida de Firestore. Documentos totales encontrados:", querySnapshot.size);
 
         if (querySnapshot.empty) {
             contenedorPedidos.innerHTML = `
@@ -229,11 +229,29 @@ window.cargarPedidos = async () => {
             return;
         }
 
-        // Metemos los documentos en un array para ordenarlos en el cliente de forma segura
         const listaPedidos = [];
         querySnapshot.forEach((docSnap) => {
-            listaPedidos.push({ id: docSnap.id, ...docSnap.data() });
+            const data = docSnap.data();
+            
+            // FILTRO ESTRICTO: 
+            // 1. Debe ser obligatoriamente tu UID.
+            // 2. Debe poseer un estatus real de confirmación (evita basura o clicks cancelados en la base de datos).
+            const estatusValidos = ["Pendiente Pago", "Pagado", "Confirmado"];
+            
+            if (data.userId === auth.currentUser.uid && estatusValidos.includes(data.estatus)) {
+                listaPedidos.push({ id: docSnap.id, ...data });
+            }
         });
+
+        // Si después de limpiar los borradores o pruebas la lista queda vacía
+        if (listaPedidos.length === 0) {
+            contenedorPedidos.innerHTML = `
+                <div class="text-center py-12 border border-dashed border-gray-700 rounded-3xl bg-gray-800/20">
+                    <p class="text-gray-400">No tienes pedidos confirmados bajo esta cuenta. ¡Elige tu próximo partido!</p>
+                </div>
+            `;
+            return;
+        }
 
         // Ordenamos por fecha de compra/creación descendente (Los más recientes primero)
         listaPedidos.sort((a, b) => {
@@ -253,7 +271,7 @@ window.cargarPedidos = async () => {
                 colorEstatus = "bg-green-900/50 text-green-400 border-green-600";
             }
 
-            // Mapeo compatible con app.js y con la estructura previa
+            // Mapeo seguro e inteligente de los campos que vengan de app.js
             const nombreTour = pedido.partido || pedido.nombreTour || 'Chivatour';
             const fechaTour = pedido.fechaPartido || pedido.fechaTour || 'No especificada';
             const precioTotal = pedido.total || pedido.precioTotal || 'N/A';
