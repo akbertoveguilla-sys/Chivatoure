@@ -229,10 +229,13 @@ window.cargarPedidos = async () => {
             listaPedidos.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        // Ordenamos en el Frontend por fechaCreacion descendente (Los más recientes primero)
+        // Ordenamos en el Frontend por fecha de compra/creación descendente (Los más recientes primero)
         listaPedidos.sort((a, b) => {
-            const tiempoA = a.fechaCreacion?.seconds ? a.fechaCreacion.seconds * 1000 : new Date(a.fechaCreacion || 0).getTime();
-            const tiempoB = b.fechaCreacion?.seconds ? b.fechaCreacion.seconds * 1000 : new Date(b.fechaCreacion || 0).getTime();
+            const fechaA = a.fechaCompra || a.fechaCreacion || 0;
+            const fechaB = b.fechaCompra || b.fechaCreacion || 0;
+            
+            const tiempoA = fechaA.seconds ? fechaA.seconds * 1000 : new Date(fechaA).getTime();
+            const tiempoB = fechaB.seconds ? fechaB.seconds * 1000 : new Date(fechaB).getTime();
             return tiempoB - tiempoA;
         });
 
@@ -244,22 +247,28 @@ window.cargarPedidos = async () => {
                 colorEstatus = "bg-green-900/50 text-green-400 border-green-600";
             }
 
+            // Mapeo compatible con app.js y con la estructura previa
+            const nombreTour = pedido.partido || pedido.nombreTour || 'Chivatour';
+            const fechaTour = pedido.fechaPartido || pedido.fechaTour || 'No especificada';
+            const precioTotal = pedido.total || pedido.precioTotal || 'N/A';
+            const montoApartado = pedido.montoApartado || 'Pendiente';
+
             htmlContenido += `
                 <div class="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition hover:border-red-600/50 w-full mb-4">
                     <div>
                         <div class="flex items-center gap-3">
-                            <h4 class="text-xl font-black text-white">${pedido.nombreTour || 'Chivatour'}</h4>
+                            <h4 class="text-xl font-black text-white">${nombreTour}</h4>
                             <span class="text-xs font-bold px-2.5 py-1 rounded-full border ${colorEstatus}">
                                 ${pedido.estatus || 'Pendiente'}
                             </span>
                         </div>
-                        <p class="text-gray-400 text-sm mt-1">🗓️ Fecha de viaje: <span class="text-gray-200 font-semibold">${pedido.fechaTour || ''}</span></p>
+                        <p class="text-gray-400 text-sm mt-1">🗓️ Fecha de viaje: <span class="text-gray-200 font-semibold">${fechaTour}</span></p>
                         <p class="text-gray-500 text-xs mt-1">ID Reserva: ${pedido.id}</p>
                     </div>
                     
                     <div class="text-left md:text-right w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0 border-gray-700">
-                        <p class="text-xs text-gray-400">Total: <span class="text-sm font-bold text-white">${pedido.precioTotal || ''}</span></p>
-                        <p class="text-sm text-red-400 font-bold mt-1">Apartado con: ${pedido.montoApartado || ''}</p>
+                        <p class="text-xs text-gray-400">Total: <span class="text-sm font-bold text-white">${precioTotal}</span></p>
+                        <p class="text-sm text-red-400 font-bold mt-1">Apartado con: ${montoApartado}</p>
                     </div>
                 </div>
             `;
@@ -276,6 +285,7 @@ window.cargarPedidos = async () => {
         `;
     }
 };
+
 
 // 10. ESTADO DE SESIÓN
 onAuthStateChanged(auth, async (user) => {
