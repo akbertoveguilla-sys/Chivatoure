@@ -351,4 +351,97 @@ onAuthStateChanged(auth, async (user) => {
             btn.onclick = () => window.toggleLoginModal();
         }
     }
+
+};
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Inicializa el grid de notas al cargar el sitio
+    inicializarPanelNotas();
+});
+
+function inicializarPanelNotas() {
+    const gridContenedor = document.getElementById('notes-grid');
+    if (!gridContenedor) return;
+
+    gridContenedor.innerHTML = ''; // Limpiar contenedor
+
+    // Bucle para construir los 9 bloques de notas independientes
+    for (let i = 1; i <= 9; i++) {
+        // Recuperar información previa guardada en el navegador
+        const tituloGuardado = localStorage.getItem(`chiva-nota-titulo-${i}`) || `Bloque de Nota #${i}`;
+        const contenidoGuardado = localStorage.getItem(`chiva-nota-txt-${i}`) || '';
+
+        const tarjetaNota = document.createElement('div');
+        tarjetaNota.className = "bg-gray-950/60 p-4 rounded-xl border border-gray-800/80 flex flex-col gap-3 transition-all duration-300 hover:border-red-600/50 shadow-md card-hover group";
+        
+        tarjetaNota.innerHTML = `
+            <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+                <input type="text" id="input-titulo-${i}" value="${tituloGuardado}" 
+                    class="bg-transparent font-medium text-red-400 focus:outline-none border-b border-transparent focus:border-red-500 w-4/5 text-sm transition-colors"
+                    placeholder="Título de la nota" onchange="guardarNotaEspecifica(${i})">
+                <span class="text-[10px] text-gray-600 font-mono bg-gray-900 px-1.5 py-0.5 rounded border border-gray-800">Nota ${i}</span>
+            </div>
+            
+            <textarea id="txt-contenido-${i}" rows="6" 
+                class="w-full bg-gray-900/50 text-gray-300 p-3 rounded-lg border border-gray-800 focus:outline-none focus:border-red-600/70 resize-none text-xs leading-relaxed font-sans placeholder-gray-600 transition-colors"
+                placeholder="Escribe tus apuntes, pendientes o recordatorios aquí..."
+                oninput="actualizarIndicadorGuardado(${i})">${contenidoGuardado}</textarea>
+            
+            <div class="flex justify-between items-center mt-1">
+                <span id="status-${i}" class="text-[10px] text-gray-500 italic flex items-center gap-1">
+                    <i class="fa-solid fa-check text-gray-600"></i> Sin cambios
+                </span>
+                <button onclick="guardarNotaEspecifica(${i})" 
+                    class="bg-gray-800 hover:bg-red-600 hover:text-white text-gray-400 px-2.5 py-1 rounded-md transition-all duration-200 text-[11px] flex items-center gap-1">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar
+                </button>
+            </div>
+        `;
+        gridContenedor.appendChild(tarjetaNota);
+    }
+}
+
+// Guarda una nota individual
+function guardarNotaEspecifica(id) {
+    const titulo = document.getElementById(`input-titulo-${id}`).value;
+    const contenido = document.getElementById(`txt-contenido-${id}`).value;
+
+    localStorage.setItem(`chiva-nota-titulo-${id}`, titulo);
+    localStorage.setItem(`chiva-nota-txt-${id}`, contenido);
+
+    const statusElement = document.getElementById(`status-${id}`);
+    statusElement.innerHTML = `<i class="fa-solid fa-circle-check text-green-500"></i> ¡Guardado!`;
+    statusElement.classList.replace('text-gray-500', 'text-green-400');
+
+    setTimeout(() => {
+        statusElement.innerHTML = `<i class="fa-solid fa-check text-gray-600"></i> Guardado`;
+        statusElement.classList.replace('text-green-400', 'text-gray-500');
+    }, 2000);
+}
+
+// Función para el botón general que guarda los 9 bloques al mismo tiempo
+function guardarTodasLasNotas() {
+    for (let i = 1; i <= 9; i++) {
+        guardarNotaEspecifica(i);
+    }
+    // Lanza notificación global (Aprovechando tus clases CSS para Toasts)
+    mostrarAvisoGlobal("Las 9 notas se guardaron correctamente");
+}
+
+function actualizarIndicadorGuardado(id) {
+    const statusElement = document.getElementById(`status-${id}`);
+    statusElement.innerHTML = `<i class="fa-solid fa-pen text-amber-500"></i> Modificando...`;
+    statusElement.classList.replace('text-gray-500', 'text-amber-400');
+}
+
+// Alerta flotante basada en tu estilo de animación '.animate-toast'
+function mostrarAvisoGlobal(texto) {
+    const toast = document.createElement('div');
+    toast.className = "fixed bottom-5 right-5 bg-gradient-to-r from-green-600 to-emerald-700 text-white px-4 py-2.5 rounded-xl shadow-2xl z-50 flex items-center gap-2 text-xs font-semibold animate-toast border border-green-500/30";
+    toast.innerHTML = `<i class="fa-solid fa-circle-check text-base"></i> ${texto}`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+}
+    
 });
