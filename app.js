@@ -82,6 +82,7 @@ window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta) => {
     if (modal) modal.classList.remove('hidden');
 };
 
+
 window.prepararReserva = (boton) => {
     const card = boton.closest('.card-hover');
     const id = card.getAttribute('data-id'); 
