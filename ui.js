@@ -74,3 +74,55 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("No se encontró el elemento con ID 'page-inicio'");
     }
 });
+
+
+
+
+// --- LÓGICA DE CONTROL PARA LOS 9 BLOCKS DE NOTAS ---
+
+// Cargar todas las notas desde la base de datos
+window.cargarNotasAdmin = async () => {
+    try {
+        // Guardamos las notas en un documento centralizado llamado "bloque_notas" dentro de la colección "admin"
+        const docSnap = await getDoc(doc(db, "admin", "bloque_notas"));
+        
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // Iteramos del 1 al 9 para rellenar los campos
+            for (let i = 1; i <= 9; i++) {
+                const tituloInput = document.getElementById(`nota-titulo-${i}`);
+                const textoInput = document.getElementById(`nota-texto-${i}`);
+                
+                if (data[`nota_${i}`]) {
+                    if (tituloInput) tituloInput.value = data[`nota_${i}`].titulo || '';
+                    if (textoInput) textoInput.value = data[`nota_${i}`].texto || '';
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Error al cargar las notas de administración:", error);
+    }
+};
+
+// Guardar una nota individual en Firebase
+window.guardarNotaAdmin = async (id) => {
+    const titulo = document.getElementById(`nota-titulo-${id}`).value.trim();
+    const texto = document.getElementById(`nota-texto-${id}`).value.trim();
+
+    try {
+        // Guardamos o actualizamos solo la casilla correspondiente usando setDoc con { merge: true }
+        await setDoc(doc(db, "admin", "bloque_notas"), {
+            [`nota_${id}`]: {
+                titulo: titulo,
+                texto: texto,
+                ultimaActualizacion: new Date()
+            }
+        }, { merge: true });
+
+        window.mostrarNotificacion(`✅ Nota #${id} guardada correctamente.`);
+    } catch (error) {
+        console.error("Error al guardar la nota:", error);
+        window.mostrarNotificacion("❌ Error al guardar la nota en la base de datos", true);
+    }
+};
+
