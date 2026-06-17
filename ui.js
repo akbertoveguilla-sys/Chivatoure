@@ -78,29 +78,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-// --- LÓGICA DE CONTROL PARA LOS 9 BLOCKS DE NOTAS ---
-
-// Cargar todas las notas desde la base de datos
-window.cargarNotasAdmin = async () => {
-    try {
-        // Guardamos las notas en un documento centralizado llamado "bloque_notas" dentro de la colección "admin"
-        const docSnap = await getDoc(doc(db, "admin", "bloque_notas"));
-        
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            // Iteramos del 1 al 9 para rellenar los campos
-            for (let i = 1; i <= 9; i++) {
-                const tituloInput = document.getElementById(`nota-titulo-${i}`);
-                const textoInput = document.getElementById(`nota-texto-${i}`);
-                
-                if (data[`nota_${i}`]) {
-                    if (tituloInput) tituloInput.value = data[`nota_${i}`].titulo || '';
-                    if (textoInput) textoInput.value = data[`nota_${i}`].texto || '';
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Error al cargar las notas de administración:", error);
-    }
-};
-

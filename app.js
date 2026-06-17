@@ -116,7 +116,8 @@ window.guardarCambiosTour = async function(btn) {
     capturar('.input-fecha-salida', 'fecha_salida');
     capturar('.input-puntos', 'puntos_salida');
     capturar('.input-ocupados', 'cupo_disponible');
-    capturar('.input-totales', 'cupo_totales');
+    // CORRECCIÓN: Cambiado 'cupo_totales' por 'cupo_total'
+    capturar('.input-totales', 'cupo_total');
 
     if (Object.keys(datosActualizar).length === 0) {
         window.mostrarNotificacion("No hay datos nuevos para guardar.", true);
@@ -132,6 +133,7 @@ window.guardarCambiosTour = async function(btn) {
         if (datosActualizar.fecha_partido) card.querySelector('.tour-fecha-partido').textContent = datosActualizar.fecha_partido;
         if (datosActualizar.fecha_salida) card.querySelector('.tour-fecha-salida').textContent = datosActualizar.fecha_salida;
         if (datosActualizar.cupo_disponible) card.querySelector('.tour-cupos-ocupados').textContent = datosActualizar.cupo_disponible;
+        // CORRECCIÓN: Validando 'cupo_total'
         if (datosActualizar.cupo_total) card.querySelector('.tour-cupos-totales').textContent = datosActualizar.cupo_total;
 
         window.mostrarNotificacion("Cambios guardados correctamente.");
@@ -140,6 +142,7 @@ window.guardarCambiosTour = async function(btn) {
         window.mostrarNotificacion("Error: " + error.message, true);
     }
 };
+
 
 // --- 4. Firebase y Inicialización ---
 
@@ -196,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     userId: auth.currentUser.uid,
                     userEmail: auth.currentUser.email,
                     partido: datosReservaPendiente.nombre,
-                    fechaPartido: datosReservaPendiente.fecha,
+                    fechapartido: datosReservaPendiente.fecha,
                     lugaresReservados: cantidadLugares, 
                     total: totalFinal, // Guarda el total multiplicado basado en el apartado
                     fechaCompra: new Date().toISOString(),
@@ -205,9 +208,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (datosReservaPendiente.id) {
                     const partidoRef = doc(db, "partidos", datosReservaPendiente.id);
-                    await updateDoc(partidoRef, {
-                        cupo_disponible: increment(cantidadLugares)
-                    });
+                    try {
+                        // Intentamos actualizar
+                        await updateDoc(partidoRef, {
+                            cupo_disponible: increment(cantidadLugares)
+                        });
+                    } catch (error) {
+                        // Si el documento no existe, lo creamos
+                        if (error.code === 'not-found') {
+                            await setDoc(partidoRef, {
+                                cupo_disponible: cantidadLugares
+                            }, { merge: true });
+                        } else {
+                            throw error;
+                        }
+                    }
                 }
 
                 if (datosReservaPendiente.urlPago && datosReservaPendiente.urlPago.trim() !== "") {
@@ -228,32 +243,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
-
-
-
-
-
-// Guardar una nota individual en Firebase
-window.guardarNotaAdmin = async (id) => {
-    const titulo = document.getElementById(`nota-titulo-${id}`).value.trim();
-    const texto = document.getElementById(`nota-texto-${id}`).value.trim();
-
-    try {
-        // Guardamos o actualizamos solo la casilla correspondiente usando setDoc con { merge: true }
-        await setDoc(doc(db, "admin", "bloque_notas"), {
-            [`nota_${id}`]: {
-                titulo: titulo,
-                texto: texto,
-                ultimaActualizacion: new Date()
-            }
-        }, { merge: true });
-
-        window.mostrarNotificacion(`✅ Nota #${id} guardada correctamente.`);
-    } catch (error) {
-        console.error("Error al guardar la nota:", error);
-        window.mostrarNotificacion("❌ Error al guardar la nota en la base de datos", true);
-    }
-};
 
 
 

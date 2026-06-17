@@ -21,4 +21,3 @@ export { collection, addDoc }; // <--- AGREGAR ESTA LÍNEA
 
 
 
-
