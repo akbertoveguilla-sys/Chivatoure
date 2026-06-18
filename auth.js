@@ -56,17 +56,18 @@ window.iniciarSesion = async () => {
 
 // 2. CAMBIO DE VISTA INTERNA (DASHBOARD/LOGIN/REGISTRO)
 window.showView = (viewId) => {
-    const vistas = ['view-login', 'view-register', 'view-forgot', 'view-dashboard', 'view-mis-pedidos', 'view-perfil'];
+    
+    const vistas = ['view-login', 'view-register', 'view-forgot', 'view-dashboard', 'view-perfil'];
+    
     vistas.forEach(id => {
         const el = document.getElementById(id);
         if(el) { el.classList.add('hidden'); el.classList.remove('flex'); }
     });
+    
     const target = document.getElementById(viewId);
     if(target) { target.classList.remove('hidden'); target.classList.add('flex'); }
     
-    if (viewId === 'view-mis-pedidos' && typeof window.cargarPedidos === 'function') {
-        window.cargarPedidos();
-    }
+    // El bloque 'if' que cargaba los pedidos ha sido eliminado por completo
 };
 
 // 3. TOGGLE MODAL DE LOGUEO

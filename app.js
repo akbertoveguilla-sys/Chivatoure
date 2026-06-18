@@ -43,6 +43,19 @@ function actualizarTarjetaUI(card, data) {
         bar.style.width = `${porcentaje}%`;
         txt.innerText = `${porcentaje}%`;
     }
+
+const btn = card.querySelector('.btn-reservar-tour');
+    const ocupados = Number(data.cupo_disponible) || 0;
+    const total = Number(data.cupo_total) || 1;
+    if (ocupados >= total) {
+        btn.innerText = "AGOTADO";
+        btn.classList.replace('bg-[#C4151C]', 'bg-gray-500');
+        btn.disabled = true;
+    } else {
+        btn.innerText = "Reservar";
+        btn.classList.replace('bg-gray-500', 'bg-[#C4151C]');
+        btn.disabled = false;
+    }
 }
 
 // --- 3. Funciones de Reserva y Administración ---
@@ -84,15 +97,29 @@ window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta) => {
 
 
 window.prepararReserva = (boton) => {
+    if (!auth.currentUser) {
+        window.mostrarNotificacion("Debes iniciar sesión para reservar", true);
+        return;
+    }
+
     const card = boton.closest('.card-hover');
+    // Validar cupos antes de abrir el modal
+    const ocupados = parseInt(card.querySelector('.tour-cupos-ocupados').innerText) || 0;
+    const totales = parseInt(card.querySelector('.tour-cupos-totales').innerText) || 0;
+
+    if (ocupados >= totales) {
+        window.mostrarNotificacion("¡Tour agotado! No hay cupos disponibles.", true);
+        return;
+    }
+
     const id = card.getAttribute('data-id'); 
     const nombre = card.querySelector('.tour-titulo').innerText;
     const fecha = card.querySelector('.tour-fecha-partido').innerText;
     const precio = card.querySelector('.tour-precio').innerText;
-    const aparta = card.querySelector('.tour-aparta').innerText; // <--- NUEVO: Captura el valor de apartado de la tarjeta
+    const aparta = card.querySelector('.tour-aparta').innerText;
     const urlPago = boton.getAttribute('data-url'); 
     
-    window.reservarTour(id, nombre, fecha, precio, urlPago, aparta); // <--- MODIFICADO: Se pasa el apartado
+    window.reservarTour(id, nombre, fecha, precio, urlPago, aparta); 
 };
 
 window.guardarCambiosTour = async function(btn) {
@@ -160,6 +187,16 @@ const initPartidos = () => {
 document.addEventListener("DOMContentLoaded", () => {
     initPartidos();
     
+    // --- NUEVO: Detección de retorno de Mercado Pago ---
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('pago') === 'exitoso') {
+        const modalInst = document.getElementById('modal-instrucciones');
+        if (modalInst) {
+            modalInst.classList.remove('hidden');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }
+    
     const btnConfirmar = document.getElementById('btn-confirmar');
     const checkbox = document.getElementById('check-terminos');
     const selectLugares = document.getElementById('select-lugares'); 
@@ -169,7 +206,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (selectLugares && totalPagoTxt) {
         selectLugares.addEventListener('change', () => {
             if (!datosReservaPendiente) return;
-            // MODIFICADO: Usa 'aparta' en lugar de 'precio'
             const precioUnitario = parseFloat(String(datosReservaPendiente.aparta).replace(/[^0-9.]/g, '')) || 0;
             const cantidad = parseInt(selectLugares.value) || 1;
             const totalCalculado = precioUnitario * cantidad;
@@ -191,7 +227,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 btnConfirmar.innerText = "Procesando...";
 
                 const cantidadLugares = selectLugares ? parseInt(selectLugares.value) : 1;
-                // MODIFICADO: Usa 'aparta' en lugar de 'precio' para calcular el total final de Firebase
                 const precioUnitario = parseFloat(String(datosReservaPendiente.aparta).replace(/[^0-9.]/g, '')) || 0;
                 const totalFinal = precioUnitario * cantidadLugares;
 
@@ -201,7 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     partido: datosReservaPendiente.nombre,
                     fechapartido: datosReservaPendiente.fecha,
                     lugaresReservados: cantidadLugares, 
-                    total: totalFinal, // Guarda el total multiplicado basado en el apartado
+                    total: totalFinal,
                     fechaCompra: new Date().toISOString(),
                     estatus: "Pendiente Pago"
                 });
@@ -209,16 +244,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (datosReservaPendiente.id) {
                     const partidoRef = doc(db, "partidos", datosReservaPendiente.id);
                     try {
-                        // Intentamos actualizar
-                        await updateDoc(partidoRef, {
-                            cupo_disponible: increment(cantidadLugares)
-                        });
+                        await updateDoc(partidoRef, { cupo_disponible: increment(cantidadLugares) });
                     } catch (error) {
-                        // Si el documento no existe, lo creamos
                         if (error.code === 'not-found') {
-                            await setDoc(partidoRef, {
-                                cupo_disponible: cantidadLugares
-                            }, { merge: true });
+                            await setDoc(partidoRef, { cupo_disponible: cantidadLugares }, { merge: true });
                         } else {
                             throw error;
                         }
@@ -226,9 +255,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 if (datosReservaPendiente.urlPago && datosReservaPendiente.urlPago.trim() !== "") {
-                    window.open(datosReservaPendiente.urlPago, '_blank');
+                    // --- NUEVO: Construcción de URL con retorno automático ---
+                    const urlBase = datosReservaPendiente.urlPago;
+                    const separador = urlBase.includes('?') ? '&' : '?';
+                    const urlConRetorno = `${urlBase}${separador}back_urls[success]=${window.location.origin}/?pago=exitoso`;
+                    
+                    window.open(urlConRetorno, '_self');
                     window.cerrarModal();
-                    window.mostrarNotificacion("Redirigiendo a Mercado Pago...");
                 } else {
                     window.mostrarNotificacion("Error: Este tour no tiene un enlace de pago configurado.", true);
                 }
@@ -243,11 +276,5 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
-
-
-
-
-
-
 
 

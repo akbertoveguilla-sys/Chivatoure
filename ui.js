@@ -1,6 +1,7 @@
 import { auth } from './firebase-config.js';
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
+console.log("¡El archivo JS se cargó correctamente!"); // <--- ESTO ES PARA PROBAR
 
 // 5. NAVEGACIÓN
 window.switchPage = (pageId) => {
@@ -26,6 +27,8 @@ window.switchPage = (pageId) => {
     const mobileMenu = document.getElementById('mobile-menu');
     if (mobileMenu) mobileMenu.classList.add('hidden');
 };
+
+
 
 // ui.js (al final del archivo)
 

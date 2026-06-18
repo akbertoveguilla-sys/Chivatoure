@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { getFunctions } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-functions.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyC9U5zMzDzKjQ7ACWSxUJKNT79d_cZi7as",
@@ -13,11 +14,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-
-// 3. INICIALIZACIÓN
+// Inicialización de servicios
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export { collection, addDoc }; // <--- AGREGAR ESTA LÍNEA
+export const functions = getFunctions(app);
 
-
-
+// Exportación de helpers
+export { collection, addDoc };
