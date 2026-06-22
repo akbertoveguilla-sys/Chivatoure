@@ -131,7 +131,12 @@ window.guardarCambiosTour = async function(btn) {
     const capturar = (selector, campoBD) => {
         const input = card.querySelector(selector);
         if (input && input.value.trim() !== "") {
-            datosActualizar[campoBD] = input.value;
+            // Se convierte a número si el campo es de cupos para no romper el consecutivo de Firestore
+            if (campoBD === 'cupo_disponible' || campoBD === 'cupo_total') {
+                datosActualizar[campoBD] = Number(input.value) || 0;
+            } else {
+                datosActualizar[campoBD] = input.value;
+            }
             input.value = ""; 
         }
     };
@@ -159,9 +164,10 @@ window.guardarCambiosTour = async function(btn) {
         if (datosActualizar.titulo) card.querySelector('.tour-titulo').textContent = datosActualizar.titulo;
         if (datosActualizar.fecha_partido) card.querySelector('.tour-fecha-partido').textContent = datosActualizar.fecha_partido;
         if (datosActualizar.fecha_salida) card.querySelector('.tour-fecha-salida').textContent = datosActualizar.fecha_salida;
-        if (datosActualizar.cupo_disponible) card.querySelector('.tour-cupos-ocupados').textContent = datosActualizar.cupo_disponible;
-        // CORRECCIÓN: Validando 'cupo_total'
-        if (datosActualizar.cupo_total) card.querySelector('.tour-cupos-totales').textContent = datosActualizar.cupo_total;
+        
+        // CORRECCIÓN: Se evalúa con !== undefined para permitir que el número 0 actualice la interfaz
+        if (datosActualizar.cupo_disponible !== undefined) card.querySelector('.tour-cupos-ocupados').textContent = datosActualizar.cupo_disponible;
+        if (datosActualizar.cupo_total !== undefined) card.querySelector('.tour-cupos-totales').textContent = datosActualizar.cupo_total;
 
         window.mostrarNotificacion("Cambios guardados correctamente.");
         btn.classList.add('bg-green-600');
@@ -169,6 +175,7 @@ window.guardarCambiosTour = async function(btn) {
         window.mostrarNotificacion("Error: " + error.message, true);
     }
 };
+
 
 
 // --- 4. Firebase y Inicialización ---
