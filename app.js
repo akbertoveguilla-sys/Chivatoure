@@ -131,7 +131,7 @@ window.guardarCambiosTour = async function(btn) {
     const capturar = (selector, campoBD) => {
         const input = card.querySelector(selector);
         if (input && input.value.trim() !== "") {
-            // Se convierte a número si el campo es de cupos para no romper el consecutivo de Firestore
+            // Al convertir a Number, Firestore sobrescribe el valor viejo con el número exacto que digites
             if (campoBD === 'cupo_disponible' || campoBD === 'cupo_total') {
                 datosActualizar[campoBD] = Number(input.value) || 0;
             } else {
@@ -148,7 +148,6 @@ window.guardarCambiosTour = async function(btn) {
     capturar('.input-fecha-salida', 'fecha_salida');
     capturar('.input-puntos', 'puntos_salida');
     capturar('.input-ocupados', 'cupo_disponible');
-    // CORRECCIÓN: Cambiado 'cupo_totales' por 'cupo_total'
     capturar('.input-totales', 'cupo_total');
 
     if (Object.keys(datosActualizar).length === 0) {
@@ -157,6 +156,7 @@ window.guardarCambiosTour = async function(btn) {
     }
 
     try {
+        // setDoc con merge: true reemplaza por completo los campos que envías en datosActualizar
         await setDoc(doc(db, "partidos", docId), datosActualizar, { merge: true });
         
         if (datosActualizar.aparta) card.querySelector('.tour-aparta').textContent = datosActualizar.aparta;
@@ -165,7 +165,7 @@ window.guardarCambiosTour = async function(btn) {
         if (datosActualizar.fecha_partido) card.querySelector('.tour-fecha-partido').textContent = datosActualizar.fecha_partido;
         if (datosActualizar.fecha_salida) card.querySelector('.tour-fecha-salida').textContent = datosActualizar.fecha_salida;
         
-        // CORRECCIÓN: Se evalúa con !== undefined para permitir que el número 0 actualice la interfaz
+        // Se usa !== undefined para que si pones 0, la interfaz visual también se limpie a 0 inmediatamente
         if (datosActualizar.cupo_disponible !== undefined) card.querySelector('.tour-cupos-ocupados').textContent = datosActualizar.cupo_disponible;
         if (datosActualizar.cupo_total !== undefined) card.querySelector('.tour-cupos-totales').textContent = datosActualizar.cupo_total;
 
@@ -175,6 +175,7 @@ window.guardarCambiosTour = async function(btn) {
         window.mostrarNotificacion("Error: " + error.message, true);
     }
 };
+
 
 
 
