@@ -34,27 +34,31 @@ function actualizarTarjetaUI(card, data) {
         }
     }
     
+    // Convertimos a números de forma segura
+    const ocupados = Number(data.cupo_disponible) || 0;
+    const total = Number(data.cupo_total) || 0; 
+    
+    // --- 1. Actualización de Barra de Progreso ---
     const bar = card.querySelector('.tour-progress-bar');
     const txt = card.querySelector('.tour-porcentaje-texto');
     if (bar && txt) {
-        const ocupados = Number(data.cupo_disponible) || 0;
-        const total = Number(data.cupo_total) || 1;
-        const porcentaje = Math.min(Math.round((ocupados / total) * 100), 100);
+        const porcentaje = total > 0 ? Math.min(Math.round((ocupados / total) * 100), 100) : 0;
         bar.style.width = `${porcentaje}%`;
         txt.innerText = `${porcentaje}%`;
     }
 
+    // --- 2. Lógica del Botón ---
     const btn = card.querySelector('.btn-reservar-tour');
-    if (btn) { // Corrección: Validación añadida para proteger el flujo del script
-        const ocupados = Number(data.cupo_disponible) || 0;
-        const total = Number(data.cupo_total) || 1;
-        if (ocupados >= total) {
+    if (btn) {
+        if (total === 0 || ocupados >= total) {
             btn.innerText = "AGOTADO";
-            btn.classList.replace('bg-[#C4151C]', 'bg-gray-500');
+            btn.classList.remove('bg-[#C4151C]'); 
+            btn.classList.add('bg-gray-500');     
             btn.disabled = true;
         } else {
             btn.innerText = "Reservar";
-            btn.classList.replace('bg-gray-500', 'bg-[#C4151C]');
+            btn.classList.remove('bg-gray-500');  
+            btn.classList.add('bg-[#C4151C]');    
             btn.disabled = false;
         }
     }
@@ -67,8 +71,7 @@ window.cerrarModal = () => {
     if (modal) modal.classList.add('hidden');
 };
 
-// Corrección: Limpieza del bloque duplicado y unificación de parámetros
-window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta, ocupados, totales) => { 
+window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta) => { 
     if (!auth || !auth.currentUser) {
         window.mostrarNotificacion("Por favor, inicia sesión para reservar.", true);
         return;
@@ -83,28 +86,11 @@ window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta, ocupados, tot
         btn.innerText = "Confirmar y Pagar";
     }
 
-    // Guardamos absolutamente todo en el estado global para el momento del pago
-    datosReservaPendiente = { id, nombre, fecha, precio, urlPago, aparta, ocupados, totales }; 
+    datosReservaPendiente = { id, nombre, fecha, precio, urlPago, aparta }; 
 
     const selectLugares = document.getElementById('select-lugares');
     const totalPagoTxt = document.getElementById('modal-total-pago');
-    
-    // Reconstrucción dinámica de las opciones del select
-    if (selectLugares) {
-        selectLugares.innerHTML = ""; 
-        const disponibles = totales - ocupados;
-        
-        // Forzamos un mínimo de 1 opción por seguridad visual si los números fallan
-        const maxOpciones = disponibles > 0 ? Math.min(disponibles, 10) : 1; 
-        
-        for (let i = 1; i <= maxOpciones; i++) {
-            const option = document.createElement('option');
-            option.value = i;
-            option.innerText = i;
-            selectLugares.appendChild(option);
-        }
-        selectLugares.value = "1"; 
-    }
+    if (selectLugares) selectLugares.value = "1";
     
     if (totalPagoTxt) totalPagoTxt.innerText = aparta; 
 
@@ -119,17 +105,11 @@ window.prepararReserva = (boton) => {
     }
 
     const card = boton.closest('.card-hover');
-    
-    // Extraemos el texto de forma segura
-    const ocupadosTexto = card.querySelector('.tour-cupos-ocupados')?.innerText || "0";
-    const totalesTexto = card.querySelector('.tour-cupos-totales')?.innerText || "0";
-    
-    // Limpiamos el texto dejando SOLO números puros (evita errores si hay "/" o letras)
-    const ocupados = parseInt(ocupadosTexto.replace(/[^0-9]/g, '')) || 0;
-    const totales = parseInt(totalesTexto.replace(/[^0-9]/g, '')) || 0;
+    const ocupados = parseInt(card.querySelector('.tour-cupos-ocupados').innerText) || 0;
+    const totales = parseInt(card.querySelector('.tour-cupos-totales').innerText) || 0;
 
-    if (totales > 0 && ocupados >= totales) {
-        window.mostrarNotificacion("¡Tour agotado! No hay cupos disponibles.", true);
+    if (totales === 0 || ocupados >= totales) {
+        window.mostrarNotificacion("¡Tour agotado o no disponible!", true);
         return;
     }
 
@@ -140,8 +120,7 @@ window.prepararReserva = (boton) => {
     const aparta = card.querySelector('.tour-aparta').innerText;
     const urlPago = boton.getAttribute('data-url'); 
     
-    // Enviamos de forma estricta los cupos procesados
-    window.reservarTour(id, nombre, fecha, precio, urlPago, aparta, ocupados, totales); 
+    window.reservarTour(id, nombre, fecha, precio, urlPago, aparta); 
 };
 
 window.guardarCambiosTour = async function(btn) {
@@ -153,6 +132,7 @@ window.guardarCambiosTour = async function(btn) {
     const capturar = (selector, campoBD) => {
         const input = card.querySelector(selector);
         if (input && input.value.trim() !== "") {
+            // Cambio de Guardar Datos: Forzar conversión numérica para Firestore
             if (campoBD === 'cupo_disponible' || campoBD === 'cupo_total') {
                 datosActualizar[campoBD] = Number(input.value) || 0;
             } else {
@@ -184,7 +164,6 @@ window.guardarCambiosTour = async function(btn) {
         if (datosActualizar.titulo) card.querySelector('.tour-titulo').textContent = datosActualizar.titulo;
         if (datosActualizar.fecha_partido) card.querySelector('.tour-fecha-partido').textContent = datosActualizar.fecha_partido;
         if (datosActualizar.fecha_salida) card.querySelector('.tour-fecha-salida').textContent = datosActualizar.fecha_salida;
-        
         if (datosActualizar.cupo_disponible !== undefined) card.querySelector('.tour-cupos-ocupados').textContent = datosActualizar.cupo_disponible;
         if (datosActualizar.cupo_total !== undefined) card.querySelector('.tour-cupos-totales').textContent = datosActualizar.cupo_total;
 
@@ -249,15 +228,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 btnConfirmar.innerText = "Procesando...";
 
                 const cantidadLugares = selectLugares ? parseInt(selectLugares.value) : 1;
-
-                const disponibles = (datosReservaPendiente.totales || 0) - (datosReservaPendiente.ocupados || 0);
-                if (cantidadLugares > disponibles) {
-                    window.mostrarNotificacion(`Lo sentimos, solo quedan ${disponibles} cupos disponibles.`, true);
-                    btnConfirmar.disabled = false;
-                    btnConfirmar.innerText = "Confirmar y Pagar";
-                    return;
-                }
-
                 const precioUnitario = parseFloat(String(datosReservaPendiente.aparta).replace(/[^0-9.]/g, '')) || 0;
                 const totalFinal = precioUnitario * cantidadLugares;
 
