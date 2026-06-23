@@ -65,8 +65,7 @@ window.cerrarModal = () => {
     if (modal) modal.classList.add('hidden');
 };
 
-// MODIFICADO: Ahora recibe el parámetro 'aparta'
-window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta) => { 
+// MODIFICADO: Ahora recibe el parámetro 'aparta'window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta, ocupados, totales) => { 
     if (!auth || !auth.currentUser) {
         window.mostrarNotificacion("Por favor, inicia sesión para reservar.", true);
         return;
@@ -81,12 +80,27 @@ window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta) => {
         btn.innerText = "Confirmar y Pagar";
     }
 
-    // MODIFICADO: Guardamos 'aparta' dentro del estado global
-    datosReservaPendiente = { id, nombre, fecha, precio, urlPago, aparta }; 
+    // MODIFICADO: Guardamos también 'ocupados' y 'totales' dentro del estado global
+    datosReservaPendiente = { id, nombre, fecha, precio, urlPago, aparta, ocupados, totales }; 
 
     const selectLugares = document.getElementById('select-lugares');
     const totalPagoTxt = document.getElementById('modal-total-pago');
-    if (selectLugares) selectLugares.value = "1";
+    
+    // --- NUEVO: Limitar las opciones del select según cupos reales libres ---
+    if (selectLugares) {
+        selectLugares.innerHTML = ""; // Limpiamos opciones anteriores
+        const disponibles = totales - ocupados;
+        
+        // Creamos opciones desde 1 hasta el número de asientos libres reales (con un tope de 10 por reserva)
+        const maxOpciones = Math.min(disponibles, 10); 
+        for (let i = 1; i <= maxOpciones; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.innerText = i;
+            selectLugares.appendChild(option);
+        }
+        selectLugares.value = "1"; // Seleccionamos 1 por defecto
+    }
     
     // MODIFICADO: El modal ahora arranca mostrando el precio de apartado
     if (totalPagoTxt) totalPagoTxt.innerText = aparta; 
@@ -94,6 +108,7 @@ window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta) => {
     const modal = document.getElementById('modal-informacion');
     if (modal) modal.classList.remove('hidden');
 };
+
 
 
 window.prepararReserva = (boton) => {
@@ -119,8 +134,10 @@ window.prepararReserva = (boton) => {
     const aparta = card.querySelector('.tour-aparta').innerText;
     const urlPago = boton.getAttribute('data-url'); 
     
-    window.reservarTour(id, nombre, fecha, precio, urlPago, aparta); 
+    // Se envían 'ocupados' y 'totales' para poder limitar el select en el modal
+    window.reservarTour(id, nombre, fecha, precio, urlPago, aparta, ocupados, totales); 
 };
+
 
 window.guardarCambiosTour = async function(btn) {
     const card = btn.closest('.card-hover');
@@ -235,6 +252,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 btnConfirmar.innerText = "Procesando...";
 
                 const cantidadLugares = selectLugares ? parseInt(selectLugares.value) : 1;
+
+                // --- NUEVO: CANDADO DE SEGURIDAD (Evita hackeos en el HTML o sobreventa) ---
+                const disponibles = (datosReservaPendiente.totales || 0) - (datosReservaPendiente.ocupados || 0);
+                if (cantidadLugares > disponibles) {
+                    window.mostrarNotificacion(`Lo sentimos, solo quedan ${disponibles} cupos disponibles.`, true);
+                    btnConfirmar.disabled = false;
+                    btnConfirmar.innerText = "Confirmar y Pagar";
+                    return; // Detiene el código por completo
+                }
+
                 const precioUnitario = parseFloat(String(datosReservaPendiente.aparta).replace(/[^0-9.]/g, '')) || 0;
                 const totalFinal = precioUnitario * cantidadLugares;
 
@@ -276,13 +303,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
             } catch (error) {
                 console.error("Error al procesar reserva:", error);
-                window.mostrarNotificacion("Ocurrió un error al procesar tu reserva.", true);
-            } finally {
-                btnConfirmar.disabled = false;
-                btnConfirmar.innerText = "Confirmar y Pagar";
-            }
-        });
-    }
-});
-
-
+                window.mostrarNotificacion("Ocurrió un error al proces
