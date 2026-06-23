@@ -44,17 +44,19 @@ function actualizarTarjetaUI(card, data) {
         txt.innerText = `${porcentaje}%`;
     }
 
-const btn = card.querySelector('.btn-reservar-tour');
-    const ocupados = Number(data.cupo_disponible) || 0;
-    const total = Number(data.cupo_total) || 1;
-    if (ocupados >= total) {
-        btn.innerText = "AGOTADO";
-        btn.classList.replace('bg-[#C4151C]', 'bg-gray-500');
-        btn.disabled = true;
-    } else {
-        btn.innerText = "Reservar";
-        btn.classList.replace('bg-gray-500', 'bg-[#C4151C]');
-        btn.disabled = false;
+    const btn = card.querySelector('.btn-reservar-tour');
+    if (btn) { // Corrección: Validación añadida para proteger el flujo del script
+        const ocupados = Number(data.cupo_disponible) || 0;
+        const total = Number(data.cupo_total) || 1;
+        if (ocupados >= total) {
+            btn.innerText = "AGOTADO";
+            btn.classList.replace('bg-[#C4151C]', 'bg-gray-500');
+            btn.disabled = true;
+        } else {
+            btn.innerText = "Reservar";
+            btn.classList.replace('bg-gray-500', 'bg-[#C4151C]');
+            btn.disabled = false;
+        }
     }
 }
 
@@ -65,23 +67,8 @@ window.cerrarModal = () => {
     if (modal) modal.classList.add('hidden');
 };
 
-// MODIFICADO: Ahora recibe el parámetro 'aparta'window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta, ocupados, totales) => { 
-    if (!auth || !auth.currentUser) {
-        window.mostrarNotificacion("Por favor, inicia sesión para reservar.", true);
-        return;
-    }
-
-    const checkbox = document.getElementById('check-terminos');
-    const btn = document.getElementById('btn-confirmar');
-    if (checkbox) checkbox.checked = false;
-    if (btn) {
-        btn.disabled = true;
-        btn.classList.add("opacity-50");
-        btn.innerText = "Confirmar y Pagar";
-    }
-
-    // MODIFICADO: Guardamos también 'ocupados' y 'totales' dentro del estado global
-    window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta, ocupados, totales) => { 
+// Corrección: Limpieza del bloque duplicado y unificación de parámetros
+window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta, ocupados, totales) => { 
     if (!auth || !auth.currentUser) {
         window.mostrarNotificacion("Por favor, inicia sesión para reservar.", true);
         return;
@@ -125,8 +112,6 @@ window.cerrarModal = () => {
     if (modal) modal.classList.remove('hidden');
 };
 
-
-
 window.prepararReserva = (boton) => {
     if (!auth.currentUser) {
         window.mostrarNotificacion("Debes iniciar sesión para reservar", true);
@@ -138,198 +123,3 @@ window.prepararReserva = (boton) => {
     // Extraemos el texto de forma segura
     const ocupadosTexto = card.querySelector('.tour-cupos-ocupados')?.innerText || "0";
     const totalesTexto = card.querySelector('.tour-cupos-totales')?.innerText || "0";
-    
-    // Limpiamos el texto dejando SOLO números puros (evita errores si hay "/" o letras)
-    const ocupados = parseInt(ocupadosTexto.replace(/[^0-9]/g, '')) || 0;
-    const totales = parseInt(totalesTexto.replace(/[^0-9]/g, '')) || 0;
-
-    if (totales > 0 && ocupados >= totales) {
-        window.mostrarNotificacion("¡Tour agotado! No hay cupos disponibles.", true);
-        return;
-    }
-
-    const id = card.getAttribute('data-id'); 
-    const nombre = card.querySelector('.tour-titulo').innerText;
-    const fecha = card.querySelector('.tour-fecha-partido').innerText;
-    const precio = card.querySelector('.tour-precio').innerText;
-    const aparta = card.querySelector('.tour-aparta').innerText;
-    const urlPago = boton.getAttribute('data-url'); 
-    
-    // Enviamos de forma estricta los cupos procesados
-    window.reservarTour(id, nombre, fecha, precio, urlPago, aparta, ocupados, totales); 
-};
-
-
-
-window.guardarCambiosTour = async function(btn) {
-    const card = btn.closest('.card-hover');
-    if (!card) return;
-    const docId = card.getAttribute('data-id');
-    let datosActualizar = {};
-    
-    const capturar = (selector, campoBD) => {
-        const input = card.querySelector(selector);
-        if (input && input.value.trim() !== "") {
-            // Al convertir a Number, Firestore sobrescribe el valor viejo con el número exacto que digites
-            if (campoBD === 'cupo_disponible' || campoBD === 'cupo_total') {
-                datosActualizar[campoBD] = Number(input.value) || 0;
-            } else {
-                datosActualizar[campoBD] = input.value;
-            }
-            input.value = ""; 
-        }
-    };
-    
-    capturar('.input-titulo', 'titulo');
-    capturar('.input-precio', 'precio');
-    capturar('.input-aparta', 'aparta'); 
-    capturar('.input-fecha-partido', 'fecha_partido');
-    capturar('.input-fecha-salida', 'fecha_salida');
-    capturar('.input-puntos', 'puntos_salida');
-    capturar('.input-ocupados', 'cupo_disponible');
-    capturar('.input-totales', 'cupo_total');
-
-    if (Object.keys(datosActualizar).length === 0) {
-        window.mostrarNotificacion("No hay datos nuevos para guardar.", true);
-        return;
-    }
-
-    try {
-        // setDoc con merge: true reemplaza por completo los campos que envías en datosActualizar
-        await setDoc(doc(db, "partidos", docId), datosActualizar, { merge: true });
-        
-        if (datosActualizar.aparta) card.querySelector('.tour-aparta').textContent = datosActualizar.aparta;
-        if (datosActualizar.precio) card.querySelector('.tour-precio').textContent = datosActualizar.precio;
-        if (datosActualizar.titulo) card.querySelector('.tour-titulo').textContent = datosActualizar.titulo;
-        if (datosActualizar.fecha_partido) card.querySelector('.tour-fecha-partido').textContent = datosActualizar.fecha_partido;
-        if (datosActualizar.fecha_salida) card.querySelector('.tour-fecha-salida').textContent = datosActualizar.fecha_salida;
-        
-        // Se usa !== undefined para que si pones 0, la interfaz visual también se limpie a 0 inmediatamente
-        if (datosActualizar.cupo_disponible !== undefined) card.querySelector('.tour-cupos-ocupados').textContent = datosActualizar.cupo_disponible;
-        if (datosActualizar.cupo_total !== undefined) card.querySelector('.tour-cupos-totales').textContent = datosActualizar.cupo_total;
-
-        window.mostrarNotificacion("Cambios guardados correctamente.");
-        btn.classList.add('bg-green-600');
-    } catch (error) {
-        window.mostrarNotificacion("Error: " + error.message, true);
-    }
-};
-
-
-
-
-// --- 4. Firebase y Inicialización ---
-
-const initPartidos = () => {
-    onSnapshot(collection(db, "partidos"), (snapshot) => {
-        snapshot.forEach((docSnap) => {
-            const card = document.querySelector(`[data-id="${docSnap.id}"]`);
-            if (card) {
-                actualizarTarjetaUI(card, docSnap.data());
-            }
-        });
-    });
-};
-
-document.addEventListener("DOMContentLoaded", () => {
-    initPartidos();
-    
-    // --- NUEVO: Detección de retorno de Mercado Pago ---
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('pago') === 'exitoso') {
-        const modalInst = document.getElementById('modal-instrucciones');
-        if (modalInst) {
-            modalInst.classList.remove('hidden');
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-    }
-    
-    const btnConfirmar = document.getElementById('btn-confirmar');
-    const checkbox = document.getElementById('check-terminos');
-    const selectLugares = document.getElementById('select-lugares'); 
-    const totalPagoTxt = document.getElementById('modal-total-pago'); 
-
-    // --- Multiplicar el total en la interfaz del modal al cambiar cantidad de lugares ---
-    if (selectLugares && totalPagoTxt) {
-        selectLugares.addEventListener('change', () => {
-            if (!datosReservaPendiente) return;
-            const precioUnitario = parseFloat(String(datosReservaPendiente.aparta).replace(/[^0-9.]/g, '')) || 0;
-            const cantidad = parseInt(selectLugares.value) || 1;
-            const totalCalculado = precioUnitario * cantidad;
-            totalPagoTxt.innerText = `$${totalCalculado.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        });
-    }
-
-    if (btnConfirmar && checkbox) {
-        checkbox.addEventListener('change', (e) => {
-            btnConfirmar.disabled = !e.target.checked;
-            btnConfirmar.classList.toggle("opacity-50", !e.target.checked);
-        });
-
-        btnConfirmar.addEventListener('click', async () => {
-            if (!datosReservaPendiente) return;
-
-            try {
-                btnConfirmar.disabled = true;
-                btnConfirmar.innerText = "Procesando...";
-
-                const cantidadLugares = selectLugares ? parseInt(selectLugares.value) : 1;
-
-                // --- NUEVO: CANDADO DE SEGURIDAD (Evita hackeos en el HTML o sobreventa) ---
-                const disponibles = (datosReservaPendiente.totales || 0) - (datosReservaPendiente.ocupados || 0);
-                if (cantidadLugares > disponibles) {
-                    window.mostrarNotificacion(`Lo sentimos, solo quedan ${disponibles} cupos disponibles.`, true);
-                    btnConfirmar.disabled = false;
-                    btnConfirmar.innerText = "Confirmar y Pagar";
-                    return; // Detiene el código por completo
-                }
-
-                const precioUnitario = parseFloat(String(datosReservaPendiente.aparta).replace(/[^0-9.]/g, '')) || 0;
-                const totalFinal = precioUnitario * cantidadLugares;
-
-                await addDoc(collection(db, "pedidos"), {
-                    userId: auth.currentUser.uid,
-                    userEmail: auth.currentUser.email,
-                    partido: datosReservaPendiente.nombre,
-                    fechapartido: datosReservaPendiente.fecha,
-                    lugaresReservados: cantidadLugares, 
-                    total: totalFinal,
-                    fechaCompra: new Date().toISOString(),
-                    estatus: "Pendiente Pago"
-                });
-
-                if (datosReservaPendiente.id) {
-                    const partidoRef = doc(db, "partidos", datosReservaPendiente.id);
-                    try {
-                        await updateDoc(partidoRef, { cupo_disponible: increment(cantidadLugares) });
-                    } catch (error) {
-                        if (error.code === 'not-found') {
-                            await setDoc(partidoRef, { cupo_disponible: cantidadLugares }, { merge: true });
-                        } else {
-                            throw error;
-                        }
-                    }
-                }
-
-                if (datosReservaPendiente.urlPago && datosReservaPendiente.urlPago.trim() !== "") {
-                    // --- NUEVO: Construcción de URL con retorno automático ---
-                    const urlBase = datosReservaPendiente.urlPago;
-                    const separador = urlBase.includes('?') ? '&' : '?';
-                    const urlConRetorno = `${urlBase}${separador}back_urls[success]=${window.location.origin}/?pago=exitoso`;
-                    
-                    window.open(urlConRetorno, '_self');
-                    window.cerrarModal();
-                } else {
-                    window.mostrarNotificacion("Error: Este tour no tiene un enlace de pago configurado.", true);
-                }
-
-            } catch (error) {
-                console.error("Error al procesar reserva:", error);
-                window.mostrarNotificacion("Ocurrió un error al procesar tu reserva.", true);
-            } finally {
-                btnConfirmar.disabled = false;
-                btnConfirmar.innerText = "Confirmar y Pagar";
-            }
-        });
-    }
-});
