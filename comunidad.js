@@ -48,27 +48,45 @@ window.borrarComentario = async (idComentario) => {
 
 function renderizarGaleria() {
     const container = document.getElementById('gallery-container');
-    if(!container) return;
+    if (!container) return;
 
     container.innerHTML = "";
     const esAdmin = auth.currentUser?.uid === ADMIN_UID;
 
+    // Si galeriaDatos no tiene nada, salimos para no dar error
+    if (!galeriaDatos || galeriaDatos.length === 0) {
+        console.log("No hay datos para mostrar.");
+        return; 
+    }
+
     galeriaDatos.forEach((item, idx) => {
+        // Aseguramos que 'fotos' sea un array, si no, lo tratamos como vacío
+        const fotos = item.fotos || [];
+        
         const div = document.createElement('div');
-        div.className = "flex flex-col items-center";
+        div.className = "flex flex-col items-center w-full";
         
         div.innerHTML = `
             <div class="bloque-marco bg-gray-900 border-4 border-[#8B5E3C] rounded-lg overflow-hidden h-64 w-full relative group">
                 <div class="carrusel-track flex overflow-x-auto h-full snap-x snap-mandatory scrollbar-hide">
-                    ${item.fotos.map((url, imgIdx) => `<img src="${url}" class="min-w-full h-full object-cover cursor-pointer flex-shrink-0" onclick="window.abrirLightbox(${idx}, ${imgIdx})">`).join('')}
+                    ${fotos.length > 0 ? fotos.map((url, imgIdx) => `
+                        <img 
+                            src="${url}" 
+                            class="min-w-full h-full object-cover cursor-pointer flex-shrink-0" 
+                            onclick="window.abrirLightbox(${idx}, ${imgIdx})"
+                            onerror="this.onerror=null; this.src='https://via.placeholder.com/600x400?text=Error+Imagen';"
+                        >
+                    `).join('') : '<p class="text-white p-4">Sin fotos</p>'}
                 </div>
             </div>
+            
             ${esAdmin ? `
                 <div class="admin-only mt-2 p-2 bg-gray-800 rounded w-full">
-                    <input type="text" value="${item.titulo}" onchange="window.cambiarTitulo('${item.id}', this.value)" class="text-black p-1 text-sm w-full" placeholder="Nuevo título">
+                    <input type="text" value="${item.titulo || ''}" onchange="window.cambiarTitulo('${item.id}', this.value)" class="text-black p-1 text-sm w-full" placeholder="Nuevo título">
                     <input type="file" onchange="window.subirFoto('${item.id}', this.files[0])" class="text-white text-xs mt-1">
                 </div>` : ''}
-            <h3 class="mt-3 text-white font-bold text-sm uppercase">${item.titulo}</h3>
+                
+            <h3 class="mt-3 text-white font-bold text-sm uppercase">${item.titulo || 'Sin título'}</h3>
         `;
         container.appendChild(div);
     });
