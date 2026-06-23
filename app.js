@@ -81,28 +81,44 @@ window.cerrarModal = () => {
     }
 
     // MODIFICADO: Guardamos también 'ocupados' y 'totales' dentro del estado global
+    window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta, ocupados, totales) => { 
+    if (!auth || !auth.currentUser) {
+        window.mostrarNotificacion("Por favor, inicia sesión para reservar.", true);
+        return;
+    }
+
+    const checkbox = document.getElementById('check-terminos');
+    const btn = document.getElementById('btn-confirmar');
+    if (checkbox) checkbox.checked = false;
+    if (btn) {
+        btn.disabled = true;
+        btn.classList.add("opacity-50");
+        btn.innerText = "Confirmar y Pagar";
+    }
+
+    // Guardamos absolutamente todo en el estado global para el momento del pago
     datosReservaPendiente = { id, nombre, fecha, precio, urlPago, aparta, ocupados, totales }; 
 
     const selectLugares = document.getElementById('select-lugares');
     const totalPagoTxt = document.getElementById('modal-total-pago');
     
-    // --- NUEVO: Limitar las opciones del select según cupos reales libres ---
+    // Reconstrucción dinámica de las opciones del select
     if (selectLugares) {
-        selectLugares.innerHTML = ""; // Limpiamos opciones anteriores
+        selectLugares.innerHTML = ""; 
         const disponibles = totales - ocupados;
         
-        // Creamos opciones desde 1 hasta el número de asientos libres reales (con un tope de 10 por reserva)
-        const maxOpciones = Math.min(disponibles, 10); 
+        // Forzamos un mínimo de 1 opción por seguridad visual si los números fallan
+        const maxOpciones = disponibles > 0 ? Math.min(disponibles, 10) : 1; 
+        
         for (let i = 1; i <= maxOpciones; i++) {
             const option = document.createElement('option');
             option.value = i;
             option.innerText = i;
             selectLugares.appendChild(option);
         }
-        selectLugares.value = "1"; // Seleccionamos 1 por defecto
+        selectLugares.value = "1"; 
     }
     
-    // MODIFICADO: El modal ahora arranca mostrando el precio de apartado
     if (totalPagoTxt) totalPagoTxt.innerText = aparta; 
 
     const modal = document.getElementById('modal-informacion');
@@ -118,11 +134,16 @@ window.prepararReserva = (boton) => {
     }
 
     const card = boton.closest('.card-hover');
-    // Validar cupos antes de abrir el modal
-    const ocupados = parseInt(card.querySelector('.tour-cupos-ocupados').innerText) || 0;
-    const totales = parseInt(card.querySelector('.tour-cupos-totales').innerText) || 0;
+    
+    // Extraemos el texto de forma segura
+    const ocupadosTexto = card.querySelector('.tour-cupos-ocupados')?.innerText || "0";
+    const totalesTexto = card.querySelector('.tour-cupos-totales')?.innerText || "0";
+    
+    // Limpiamos el texto dejando SOLO números puros (evita errores si hay "/" o letras)
+    const ocupados = parseInt(ocupadosTexto.replace(/[^0-9]/g, '')) || 0;
+    const totales = parseInt(totalesTexto.replace(/[^0-9]/g, '')) || 0;
 
-    if (ocupados >= totales) {
+    if (totales > 0 && ocupados >= totales) {
         window.mostrarNotificacion("¡Tour agotado! No hay cupos disponibles.", true);
         return;
     }
@@ -134,9 +155,10 @@ window.prepararReserva = (boton) => {
     const aparta = card.querySelector('.tour-aparta').innerText;
     const urlPago = boton.getAttribute('data-url'); 
     
-    // Se envían 'ocupados' y 'totales' para poder limitar el select en el modal
+    // Enviamos de forma estricta los cupos procesados
     window.reservarTour(id, nombre, fecha, precio, urlPago, aparta, ocupados, totales); 
 };
+
 
 
 window.guardarCambiosTour = async function(btn) {
