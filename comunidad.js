@@ -98,14 +98,26 @@ let currentPhotoIdx = 0;
 let ultimoSnapshot = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    // A. Escuchar cambios en la base de datos
-    onSnapshot(collection(db, "galerias"), (snapshot) => {
-        galeriaDatos = []; 
-        snapshot.forEach((doc) => {
-            galeriaDatos.push({ id: doc.id, ...doc.data() }); 
-        });
-        renderizarGaleria(); // Redibujar cuando hay datos nuevos
-    });
+    // A. Escuchar cambios en la base de datos (CON DEBUGGING)
+    onSnapshot(
+        collection(db, "galerias"), 
+        (snapshot) => {
+            console.log("✅ Conexión con Firestore exitosa. Documentos recibidos:", snapshot.size);
+            
+            galeriaDatos = []; 
+            snapshot.forEach((doc) => {
+                galeriaDatos.push({ id: doc.id, ...doc.data() }); 
+            });
+            
+            console.log("📦 Datos en memoria:", galeriaDatos);
+            renderizarGaleria(); 
+        },
+        (error) => {
+            // ESTO ES LO MÁS IMPORTANTE
+            console.error("❌ Error al conectar con Firestore (¿Permisos?):", error.code, error.message);
+            alert("Error al cargar la galería: " + error.message);
+        }
+    );
 
     // B. Comentarios
     const lista = document.getElementById('comment-list');
