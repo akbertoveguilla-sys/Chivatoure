@@ -303,4 +303,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             } catch (error) {
                 console.error("Error al procesar reserva:", error);
-                window.mostrarNotificacion("Ocurrió un error al proces
+                window.mostrarNotificacion("Ocurrió un error al procesar tu reserva.", true);
+            } finally {
+                btnConfirmar.disabled = false;
+                btnConfirmar.innerText = "Confirmar y Pagar";
+            }
+        });
+    }
+});
+
