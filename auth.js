@@ -6,7 +6,9 @@ import {
     createUserWithEmailAndPassword, 
     signOut, 
     sendPasswordResetEmail ,
-    updateProfile
+    updateProfile,
+    setPersistence,
+    browserSessionPersistence
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
 import { 
@@ -45,14 +47,35 @@ window.togglePassword = () => {
 window.iniciarSesion = async () => {
     const email = document.getElementById('login-email').value.trim();
     const passInput = document.getElementById('login-pass');
+    
+    // Estos son los UIDs que definiste en tus reglas de Firestore
+    const adminUIDs = ["f0M2dGbM7aQPVKI2P4Fr7P6NJnX2", "NGGJIkXIwXR8hAGAScWpNOgSWOf2"];
+
     try {
-        await signInWithEmailAndPassword(auth, email, passInput.value);
+        // 1. Intentar iniciar sesión
+        const userCredential = await signInWithEmailAndPassword(auth, email, passInput.value);
+        const user = userCredential.user;
+
+        // 2. Verificar si el UID del usuario está en tu lista de admins
+        if (adminUIDs.includes(user.uid)) {
+            localStorage.setItem('es_admin', 'true');
+        } else {
+            // Si no es admin, aseguramos que el valor no exista
+            localStorage.removeItem('es_admin');
+            console.log("Sesión iniciada como usuario estándar.");
+        }
+
+        // 3. Limpiar campos y actualizar UI
         passInput.value = '';
+        window.verificarPermisosAdmin(); // Esto revelará los botones inmediatamente
         window.showView('view-dashboard');
+
     } catch (error) {
+        console.error("Error al iniciar sesión:", error);
         window.mostrarNotificacion("Correo o contraseña incorrectos.", true);
     }
 };
+
 
 // 2. CAMBIO DE VISTA INTERNA (DASHBOARD/LOGIN/REGISTRO)
 window.showView = (viewId) => {
@@ -128,10 +151,20 @@ window.registrarse = async () => {
 // 5. CERRAR SESIÓN
 window.cerrarSesion = async () => {
     try {
+        // 1. Eliminamos el permiso de admin del localStorage
+        localStorage.removeItem('es_admin');
+
+        // 2. Cerramos la sesión en Firebase
         await signOut(auth);
+        
+        // 3. Notificamos al usuario
         window.mostrarNotificacion("Sesión finalizada.");
+        
+        // 4. Recargamos la página para limpiar el estado de la aplicación
         setTimeout(() => window.location.reload(), 900);
-    } catch (error) { mostrarNotificacion("Error al cerrar sesión", true); }
+    } catch (error) { 
+        mostrarNotificacion("Error al cerrar sesión", true); 
+    }
 };
 
 // 6. CAMBIAR PASSWORD
@@ -236,6 +269,120 @@ const vincularBotones = () => {
     }
 };
 
+
+// 1. Configuración de persistencia (Colócalo antes del onAuthStateChanged)
+setPersistence(auth, browserSessionPersistence)
+    .catch((error) => console.error("Error en persistencia:", error));
+
+// 2. Lógica de validación de tiempo dentro de onAuthStateChanged
+onAuthStateChanged(auth, async (user) => {
+    const btn = document.getElementById('auth-btn');
+    const btnNotas = document.getElementById('btn-notas');
+
+    if (user) {
+        // --- INICIO DE NUEVA LÓGICA DE TIEMPO (2 HORAS) ---
+        const loginTime = localStorage.getItem('loginTime');
+        const now = Date.now();
+        const twoHours = 2 * 60 * 60 * 1000;
+
+        if (!loginTime) {
+            // Si es la primera vez que detecta el login, guarda el tiempo actual
+            localStorage.setItem('loginTime', now.toString());
+        } else if (now - parseInt(loginTime) > twoHours) {
+            // Si pasaron más de 2 horas, cierra sesión
+            localStorage.removeItem('loginTime');
+            await signOut(auth);
+            window.location.reload(); 
+            return; // Detiene la ejecución aquí
+        }
+        // --- FIN DE NUEVA LÓGICA ---
+
+        if (btn) {
+            btn.innerHTML = '<i class="fa-solid fa-user"></i> <span class="hidden sm:inline display-nombre">Mi Cuenta</span>';
+            btn.onclick = () => { 
+                window.toggleLoginModal(); 
+                window.showView('view-dashboard'); 
+            };
+        }
+        try {
+            const docSnap = await getDoc(doc(db, "users", user.uid));
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.querySelectorAll('.display-nombre').forEach(el => el.innerText = data.nombre);
+                document.querySelectorAll('.display-celular').forEach(el => el.innerText = data.celular || "No disponible");
+                
+                if (btnNotas) {
+                    if (data.role === 'admin') {
+                        btnNotas.classList.remove('hidden');
+                        if (typeof window.cargarNotasAdmin === 'function') window.cargarNotasAdmin();
+                    } else {
+                        btnNotas.classList.add('hidden');
+                    }
+                }
+            }
+        } catch (e) { console.error(e); }
+        if (typeof window.cargarPedidos === 'function') window.cargarPedidos();
+    } else {
+        // Limpiamos el tiempo al cerrar sesión
+        localStorage.removeItem('loginTime');
+        
+        if (btnNotas) btnNotas.classList.add('hidden');
+        if (btn) {
+            btn.innerHTML = '<i class="fa-solid fa-user"></i> <span class="hidden sm:inline">Ingresar</span>';
+            btn.onclick = () => { 
+                window.toggleLoginModal(); 
+                window.showView('view-login'); 
+            };
+        }
+    }
+});
+
+
+
+// 11. OBSERVADOR DE ESTADO DE SESIÓN (Y CONTROL DE NOTAS ADMIN)
+onAuthStateChanged(auth, async (user) => {
+    const btn = document.getElementById('auth-btn');
+    const btnNotas = document.getElementById('btn-notas');
+
+    if (user) {
+        if (btn) {
+            btn.innerHTML = '<i class="fa-solid fa-user"></i> <span class="hidden sm:inline display-nombre">Mi Cuenta</span>';
+            btn.onclick = () => { 
+                window.toggleLoginModal(); 
+                window.showView('view-dashboard'); 
+            };
+        }
+        try {
+            const docSnap = await getDoc(doc(db, "users", user.uid));
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.querySelectorAll('.display-nombre').forEach(el => el.innerText = data.nombre);
+                document.querySelectorAll('.display-celular').forEach(el => el.innerText = data.celular || "No disponible");
+                
+                if (btnNotas) {
+                    if (data.role === 'admin') {
+                        btnNotas.classList.remove('hidden');
+                        // --- NUEVO: Carga las notas de Firebase de inmediato si es Admin ---
+                        if (typeof window.cargarNotasAdmin === 'function') window.cargarNotasAdmin();
+                    } else {
+                        btnNotas.classList.add('hidden');
+                    }
+                }
+            }
+        } catch (e) { console.error(e); }
+        if (typeof window.cargarPedidos === 'function') window.cargarPedidos();
+    } else {
+        if (btnNotas) btnNotas.classList.add('hidden');
+        if (btn) {
+            btn.innerHTML = '<i class="fa-solid fa-user"></i> <span class="hidden sm:inline">Ingresar</span>';
+            btn.onclick = () => { 
+                window.toggleLoginModal(); 
+                window.showView('view-login'); 
+            };
+        }
+    }
+});
+
 // CARGAR HISTORIAL DE PEDIDOS
 window.cargarPedidos = async () => {
     const contenedorPedidos = document.getElementById('contenedor-pedidos');
@@ -333,49 +480,7 @@ window.cargarPedidos = async () => {
     }
 };
 
-// 11. OBSERVADOR DE ESTADO DE SESIÓN (Y CONTROL DE NOTAS ADMIN)
-onAuthStateChanged(auth, async (user) => {
-    const btn = document.getElementById('auth-btn');
-    const btnNotas = document.getElementById('btn-notas');
 
-    if (user) {
-        if (btn) {
-            btn.innerHTML = '<i class="fa-solid fa-user"></i> <span class="hidden sm:inline display-nombre">Mi Cuenta</span>';
-            btn.onclick = () => { 
-                window.toggleLoginModal(); 
-                window.showView('view-dashboard'); 
-            };
-        }
-        try {
-            const docSnap = await getDoc(doc(db, "users", user.uid));
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                document.querySelectorAll('.display-nombre').forEach(el => el.innerText = data.nombre);
-                document.querySelectorAll('.display-celular').forEach(el => el.innerText = data.celular || "No disponible");
-                
-                if (btnNotas) {
-                    if (data.role === 'admin') {
-                        btnNotas.classList.remove('hidden');
-                        // --- NUEVO: Carga las notas de Firebase de inmediato si es Admin ---
-                        if (typeof window.cargarNotasAdmin === 'function') window.cargarNotasAdmin();
-                    } else {
-                        btnNotas.classList.add('hidden');
-                    }
-                }
-            }
-        } catch (e) { console.error(e); }
-        if (typeof window.cargarPedidos === 'function') window.cargarPedidos();
-    } else {
-        if (btnNotas) btnNotas.classList.add('hidden');
-        if (btn) {
-            btn.innerHTML = '<i class="fa-solid fa-user"></i> <span class="hidden sm:inline">Ingresar</span>';
-            btn.onclick = () => { 
-                window.toggleLoginModal(); 
-                window.showView('view-login'); 
-            };
-        }
-    }
-});
 
 // DISPARADORES INICIALES DE LA PÁGINA
 document.addEventListener('DOMContentLoaded', () => {

@@ -1,7 +1,7 @@
 import { auth } from './firebase-config.js';
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-console.log("¡El archivo JS se cargó correctamente!"); // <--- ESTO ES PARA PROBAR
+
 
 // 5. NAVEGACIÓN
 window.switchPage = (pageId) => {
@@ -18,14 +18,21 @@ window.switchPage = (pageId) => {
     
     if (target) {
         target.classList.add('active'); // El CSS se encarga de mostrarla
-        console.log("Sección activada con éxito.");
-    } else {
+            } else {
         console.error("Error: No encuentro el elemento con ID: 'page-" + pageId + "' ni '" + pageId + "'");
     }
     
     // 3. Cerrar menú móvil si existe
     const mobileMenu = document.getElementById('mobile-menu');
     if (mobileMenu) mobileMenu.classList.add('hidden');
+
+    if (pageId === 'viajes') {
+        // Mostramos el modal si es la sección de viajes
+        const modal = document.getElementById('modal-pago-chivatours');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    }
 };
 
 
@@ -72,7 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const seccionInicio = document.getElementById('page-inicio');
     if (seccionInicio) {
         seccionInicio.classList.add('active');
-        console.log("Página de inicio cargada correctamente.");
     } else {
         console.error("No se encontró el elemento con ID 'page-inicio'");
     }

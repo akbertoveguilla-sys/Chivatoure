@@ -3,7 +3,8 @@ import {
     doc, 
     updateDoc, 
     setDoc,
-    getDocs, 
+    getDocs,
+    getDoc,
     collection,
     onSnapshot,
     addDoc,
@@ -90,13 +91,31 @@ window.reservarTour = (id, nombre, fecha, precio, urlPago, aparta) => {
 
     const selectLugares = document.getElementById('select-lugares');
     const totalPagoTxt = document.getElementById('modal-total-pago');
-    if (selectLugares) selectLugares.value = "1";
+    
+    // --- LÓGICA DE DISPONIBILIDAD DINÁMICA ---
+    const card = document.querySelector(`[data-id="${id}"]`);
+    const ocupados = parseInt(card.querySelector('.tour-cupos-ocupados').innerText) || 0;
+    const totales = parseInt(card.querySelector('.tour-cupos-totales').innerText) || 45;
+    const disponibles = Math.max(0, totales - ocupados);
+
+    if (selectLugares) {
+        selectLugares.innerHTML = '';
+        const limite = Math.min(15, disponibles);
+        for (let i = 1; i <= limite; i++) {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = `${i} lugar${i > 1 ? 'es' : ''}`;
+            selectLugares.appendChild(opt);
+        }
+    }
+    // -----------------------------------------
     
     if (totalPagoTxt) totalPagoTxt.innerText = aparta; 
 
     const modal = document.getElementById('modal-informacion');
     if (modal) modal.classList.remove('hidden');
 };
+
 
 window.prepararReserva = (boton) => {
     if (!auth.currentUser) {
@@ -174,8 +193,29 @@ window.guardarCambiosTour = async function(btn) {
     }
 };
 
-// --- 4. Firebase y Inicialización ---
 
+// Función para revelar los elementos protegidos si el usuario es administrador
+window.verificarPermisosAdmin = function() {
+    const valorLS = localStorage.getItem('es_admin');
+    const esAdmin = valorLS === 'true'; // Compara estrictamente con el texto "true"
+    const botones = document.querySelectorAll('.admin-only');
+
+
+
+    botones.forEach(btn => {
+        if (esAdmin) {
+            btn.classList.remove('hidden');
+            ;
+        } else {
+            btn.classList.add('hidden');
+            ;
+        }
+    });
+};
+
+
+
+// --- 4. Firebase y Inicialización ---
 const initPartidos = () => {
     onSnapshot(collection(db, "partidos"), (snapshot) => {
         snapshot.forEach((docSnap) => {
@@ -184,11 +224,26 @@ const initPartidos = () => {
                 actualizarTarjetaUI(card, docSnap.data());
             }
         });
+
+        // Llamamos a la verificación después de que todas las tarjetas se hayan actualizado.
+        // Esto asegura que, si eres admin, los botones se muestren siempre.
+        verificarPermisosAdmin(); 
     });
 };
 
+
 document.addEventListener("DOMContentLoaded", () => {
+    // --- NUEVO: SEGURIDAD ANTI-FLASH ---
+    // Ocultamos todos los elementos de admin inmediatamente para que no parpadeen
+    document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+
+    // 1. Inicializar partidos
     initPartidos();
+
+    // 2. Verificar permisos de admin inmediatamente después de cargar
+    if (typeof window.verificarPermisosAdmin === 'function') {
+        window.verificarPermisosAdmin();
+    }
     
     const params = new URLSearchParams(window.location.search);
     if (params.get('pago') === 'exitoso') {
@@ -227,34 +282,44 @@ document.addEventListener("DOMContentLoaded", () => {
                 btnConfirmar.disabled = true;
                 btnConfirmar.innerText = "Procesando...";
 
-                const cantidadLugares = selectLugares ? parseInt(selectLugares.value) : 1;
+                // 1. LEER ESTADO ACTUAL DE LA BASE DE DATOS
+                const partidoRef = doc(db, "partidos", datosReservaPendiente.id);
+                const docSnap = await getDoc(partidoRef);
+                const data = docSnap.data();
+                
+                const cupoActual = Number(data.cupo_disponible) || 0;
+                const cupoTotal = Number(data.cupo_total) || 45;
+                const cantidadSolicitada = selectLugares ? parseInt(selectLugares.value) : 1;
+
+                // 2. VALIDACIÓN DE SEGURIDAD (Si excede, bloqueamos)
+                if ((cupoActual + cantidadSolicitada) > cupoTotal) {
+                    window.mostrarNotificacion(`Error: Solo quedan ${cupoTotal - cupoActual} lugares disponibles.`, true);
+                    btnConfirmar.disabled = false;
+                    btnConfirmar.innerText = "Confirmar y Pagar";
+                    return;
+                }
+
+                // 3. REGISTRAR PEDIDO
                 const precioUnitario = parseFloat(String(datosReservaPendiente.aparta).replace(/[^0-9.]/g, '')) || 0;
-                const totalFinal = precioUnitario * cantidadLugares;
+                const totalFinal = precioUnitario * cantidadSolicitada;
 
                 await addDoc(collection(db, "pedidos"), {
                     userId: auth.currentUser.uid,
                     userEmail: auth.currentUser.email,
                     partido: datosReservaPendiente.nombre,
                     fechapartido: datosReservaPendiente.fecha,
-                    lugaresReservados: cantidadLugares, 
+                    lugaresReservados: cantidadSolicitada, 
                     total: totalFinal,
                     fechaCompra: new Date().toISOString(),
                     estatus: "Pendiente Pago"
                 });
 
-                if (datosReservaPendiente.id) {
-                    const partidoRef = doc(db, "partidos", datosReservaPendiente.id);
-                    try {
-                        await updateDoc(partidoRef, { cupo_disponible: increment(cantidadLugares) });
-                    } catch (error) {
-                        if (error.code === 'not-found') {
-                            await setDoc(partidoRef, { cupo_disponible: cantidadLugares }, { merge: true });
-                        } else {
-                            throw error;
-                        }
-                    }
-                }
+                // 4. ACTUALIZAR CUPO (Sumando directamente al valor real)
+                await updateDoc(partidoRef, { 
+                    cupo_disponible: cupoActual + cantidadSolicitada 
+                });
 
+                // 5. REDIRECCIÓN
                 if (datosReservaPendiente.urlPago && datosReservaPendiente.urlPago.trim() !== "") {
                     const urlBase = datosReservaPendiente.urlPago;
                     const separador = urlBase.includes('?') ? '&' : '?';
@@ -276,3 +341,79 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+
+function actualizarOpcionesSelect(disponibles) {
+    const select = document.getElementById('select-lugares');
+    if (!select) return;
+    
+    // El límite es 11 o los disponibles, lo que sea menor
+    const limite = Math.min(15, disponibles);
+    
+    select.innerHTML = ''; // Limpiar opciones actuales
+    for (let i = 1; i <= limite; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `${i} lugar${i > 1 ? 'es' : ''}`;
+        select.appendChild(option);
+    }
+}
+
+
+window.mostrarDesglose = function(btn) {
+    const card = btn.closest('.card-hover');
+    const modal = document.getElementById('modal-desglose');
+    const container = document.getElementById('contenido-desglose');
+    
+    // Verificamos que el modal exista en el HTML antes de intentar abrirlo
+    if (!modal || !container) {
+        console.error("No se encontró el elemento 'modal-desglose' en tu HTML.");
+        return;
+    }
+
+    const precioTexto = card.querySelector('.tour-precio').innerText.replace(/[^0-9.]/g, '');
+    const ocupadosTexto = card.querySelector('.tour-cupos-ocupados').innerText.replace(/[^0-9]/g, '');
+    
+    const precioUnitario = parseFloat(precioTexto) || 0;
+    const ocupados = parseInt(ocupadosTexto) || 0;
+
+    // --- Lógica del Contenido ---
+    if (precioUnitario === 0 || ocupados === 0) {
+        container.innerHTML = `
+            <div class="text-center py-6">
+                <div class="text-4xl mb-4">⚠️</div>
+                <h3 class="text-xl font-bold text-white mb-2">Sin datos registrados</h3>
+                <p class="text-gray-400 text-sm">Aún no hay ventas o precios definidos para este tour.</p>
+            </div>
+        `;
+    } else {
+        const totalVentas = precioUnitario * ocupados;
+        const comisionTotal = totalVentas * 0.10; 
+        const comisionPorPatrocinador = comisionTotal / 5;
+
+        const formato = (num) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(num);
+
+        container.innerHTML = `
+            <h3 class="text-lg font-black text-white mb-4 border-b border-gray-700 pb-2">📊 Desglose Financiero</h3>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Ventas Totales:</span> 
+                    <span class="font-bold text-white">${formato(totalVentas)}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Comisión (10%):</span> 
+                    <span class="font-bold text-red-400">${formato(comisionTotal)}</span>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-700">
+                    <p class="text-gray-400 mb-1">Por patrocinador (5):</p>
+                    <div class="text-2xl font-black text-green-400">${formato(comisionPorPatrocinador)}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Abrimos el modal
+    modal.showModal();
+};
+
+

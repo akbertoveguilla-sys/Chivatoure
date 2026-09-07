@@ -61,6 +61,18 @@
     width: 100%;
     box-sizing: border-box;
 }
+
+
+    .no-animate {
+        transition: none !important;
+        animation: none !important;
+    }
+
+/* Esto asegura que la clase hidden tenga prioridad absoluta */
+.admin-only.hidden {
+    display: none !important;
+}
+
      </style>
 </head>
 
@@ -100,7 +112,7 @@
         <button id="btn-viajes" onclick="switchPage('viajes')" class="py-2 px-3 rounded-lg text-left sm:text-center transition-all text-gray-400 hover:text-white">
             <i class="fa-solid fa-bus sm:mr-1.5 hidden sm:inline"></i>
             <span>Chiva Tours</span>
-        </button>
+        </button>       
         <button id="btn-internacionales" onclick="switchPage('internacionales')" class="py-2 px-3 rounded-lg text-left sm:text-center transition-all text-gray-400 hover:text-white">
             <i class="fa-solid fa-earth-americas sm:mr-1.5 hidden sm:inline"></i>
             <span>Internacionales y Especiales</span>
@@ -112,7 +124,7 @@
         <button id="btn-comunidad" onclick="switchPage('comunidad')" class="py-2 px-3 rounded-lg text-left sm:text-center transition-all text-gray-400 hover:text-white">
             <i class="fa-solid fa-users sm:mr-1.5 hidden sm:inline"></i>
             <span>Comunidad</span>
-        </button>
+        </button>        
         
         <button id="btn-notas" onclick="switchPage('admin-notes-page')" class="hidden py-2 px-3 rounded-lg text-left sm:text-center transition-all text-gray-400 hover:text-white border border-dashed border-red-900/40 hover:border-red-600/60 bg-red-950/20 sm:bg-transparent">
             <i class="fa-solid fa-clipboard-list sm:mr-1.5 text-red-500"></i>
@@ -120,6 +132,31 @@
         </button>
     </div>
 </div>
+
+
+<div id="modal-pago-chivatours" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 hidden p-4">
+    <div class="bg-gray-900 border border-red-600 p-6 rounded-2xl w-full max-w-sm shadow-2xl relative">
+        <button onclick="document.getElementById('modal-pago-chivatours').classList.add('hidden')" 
+                class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+        
+        <h2 class="text-white text-xl font-bold mb-4">Información de Pago</h2>
+        
+        <p class="text-gray-300 text-sm mb-4">
+            Al realizar su reservación debe enviarnos foto de su comprobante de depósito por correo electrónico a 
+            <a href="mailto:linearojiblanca@gmail.com" class="text-gray-400 font-bold underline">linearojiblanca@gmail.com</a> 
+            con la siguiente información:
+        </p>
+
+        <ul class="text-gray-300 text-sm mb-6 list-disc ml-4 space-y-1">
+            <li>Nombre de la persona que reserva.</li>
+            <li>Número de WhatsApp.</li>
+            <li>Cantidad de lugares que reserva.</li>
+            <li>Viaje al que hace su reservación.</li>
+        </ul>
+
+    </div>
+</div>
+
 
 
 
@@ -208,7 +245,7 @@
         <section id="page-inicio" class="page-section active max-w-6xl mx-auto px-4 mt-4">
             <div class="bg-gradient-to-br from-gray-800 to-gray-800/50 border border-gray-700 rounded-3xl p-8 md:p-12 shadow-2xl">
                 <h2 class="text-3xl font-black text-red-600">VIVE LA EXPERIENCIA CHIVATOURS</h2>
-                <p class="text-gray-300">Desde el 2015 re-inventamos la forma de apoyar al Club Deportivo Guadalajara en ambiente familiar, realizando viajes desde CDMX, Puebla y Toluca al Estadio Akron en Guadalajara principalmente y también en ocasiones a otros Estadios en partidos de visita.</p>
+                <p class="text-gray-300">Desde el 2015 re-inventamos la forma de apoyar al Club Deportivo Guadalajara en ambiente familiar, realizando viajes desde CDMX y Toluca al Estadio Akron en Guadalajara principalmente y también en ocasiones a otros Estadios en partidos de visita.</p>
             </div>
         </section>
     </main>
@@ -255,12 +292,22 @@
 
 
         
-
 <!-- PAGIAN COMUNIDAD 4 -->
 
 
 <div id="page-comunidad" class="page-section"> 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
 
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<div id="admin-gallery-controls" class="hidden mb-6 flex justify-center">
+    <button onclick="window.crearNuevaGaleria()" 
+            class="bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700 transition shadow-lg">
+        + Crear Nueva Galería
+    </button>
+</div>
+<div id="gallery-container" class="grid grid-cols-1 md:grid-cols-4 gap-6 pb-8">
+    </div>
     <div id="gallery-container" class="grid grid-cols-1 md:grid-cols-4 gap-6 pb-8">
         </div>
 
@@ -305,7 +352,8 @@
         </div>
     </div>
 </div>
-</section></div>
+
+
 
 
 <!--PAGINA 2 INTERNACIONALES-->
@@ -315,10 +363,9 @@
 <section id="page-internacionales" class="page-section max-w-6xl mx-auto px-4 mt-4">
     <h2 class="text-3xl font-black text-red-600 mb-8">CHIVATOURS INTERNACIONALES</h2>
     
-   
-       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">       
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8"> 
 
-<div data-id="tour_angeles" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
+      <div data-id="tour_angeles" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
     <h2 class="text-2xl font-black text-white"><span class="tour-titulo">⚫LOS ANGELES FC VS CHIVAS 🔴</span></h2>
     
     <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
@@ -343,19 +390,43 @@
         <li>Salida: <span class="tour-salida">--</span></li>
         <li>Regreso: <span class="tour-regreso">--</span></li>
     </ul>
+
     <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
-        <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+        <div class="flex items-center justify-between">
+            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+            <!-- Botón de Info circular (ahora controlado por admin-controls) -->
+            <button onclick="abrirModalInfo(this)" 
+            title="Ver desglose de patrocinios"
+            class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md"> 
+            i
+            </button>
+        </div>
         <div class="mt-2 text-sm text-yellow-500">
             Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
             <span class="porcentaje-cupo ml-2 font-bold">0%</span>
         </div>
         <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
-        <button onclick="abrirModalReserva(this)" data-titulo="Título del Viaje" class="mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
+        
+        <button onclick="abrirModalReserva(this)" data-titulo="Título del Viaje" class="btn-reservar-internacional mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
+        
+        <!-- Modal de Información -->
+        <div id="modal-info" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-70 p-4">
+            <div class="bg-gray-800 border border-gray-600 rounded-2xl p-6 max-w-sm w-full relative">
+                <!-- Botón de cierre -->
+                <button onclick="cerrarModalInfo()" class="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl p-2">✕</button>
+                
+                <!-- Contenedor donde se insertará el mensaje -->
+                <div id="modal-info-contenido"></div>
+                
+                <!-- Botón de cierre inferior -->
+                <button onclick="cerrarModalInfo()" class="mt-6 w-full bg-gray-600 py-2 rounded-xl text-white font-bold hover:bg-gray-500">Cerrar</button>
+            </div>
+        </div>
+    </div>
 </div>
-</div>
 
 
-
+        <!--tour 2-->
 <div data-id="tour_mazatlan" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
     <h2 class="text-2xl font-black text-white"><span class="tour-titulo">LOS ANGELES FC VS CHIVAS</span></h2>
     
@@ -381,17 +452,22 @@
         <li>Salida: <span class="tour-salida">--</span></li>
         <li>Regreso: <span class="tour-regreso">--</span></li>
     </ul>
+
     <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
-        <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+        <div class="flex items-center justify-between">
+            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+            <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
+        </div>
         <div class="mt-2 text-sm text-yellow-500">
             Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
             <span class="porcentaje-cupo ml-2 font-bold">0%</span>
         </div>
         <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
-        <button onclick="abrirModalReserva(this)" class="mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
+        <button onclick="abrirModalReserva(this)" data-titulo="Título del Viaje" class="btn-reservar-internacional mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
     </div>
 </div>
 
+<!-- TOUR 3 -->
 <div data-id="tour_puebla" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
     <h2 class="text-2xl font-black text-white"><span class="tour-titulo">LOS ANGELES FC VS CHIVAS</span></h2>
     
@@ -417,18 +493,22 @@
         <li>Salida: <span class="tour-salida">--</span></li>
         <li>Regreso: <span class="tour-regreso">--</span></li>
     </ul>
+
     <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
-        <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+        <div class="flex items-center justify-between">
+            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+            <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
+        </div>
         <div class="mt-2 text-sm text-yellow-500">
             Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
             <span class="porcentaje-cupo ml-2 font-bold">0%</span>
         </div>
         <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
-        <button onclick="abrirModalReserva(this)" class="mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
+        <button onclick="abrirModalReserva(this)" data-titulo="Título del Viaje" class="btn-reservar-internacional mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
     </div>
 </div>
 
-
+<!-- TOUR 4 -->
 <div data-id="tour_disney" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
     <h2 class="text-2xl font-black text-white"><span class="tour-titulo">a</span></h2>
     
@@ -454,8 +534,174 @@
         <li>Salida: <span class="tour-salida">--</span></li>
         <li>Regreso: <span class="tour-regreso">--</span></li>
     </ul>
+
     <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
-        <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+        <div class="flex items-center justify-between">
+            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+            <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
+        </div>
+        <div class="mt-2 text-sm text-yellow-500">
+            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
+            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
+        <button onclick="abrirModalReserva(this)" data-titulo="Título del Viaje" class="btn-reservar-internacional mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
+    </div>
+</div>
+
+<!-- TOUR 5 -->
+<div data-id="tour_5" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
+    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">LOS ANGELES FC VS CHIVAS</span></h2>
+    
+    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
+        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
+        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
+        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
+        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
+        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
+        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
+        <div class="flex gap-2">
+            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
+        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
+        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+
+    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
+    <ul class="mt-4 space-y-2 text-gray-300">
+        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
+        <li>Salida: <span class="tour-salida">--</span></li>
+        <li>Regreso: <span class="tour-regreso">--</span></li>
+    </ul>
+
+    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
+        <div class="flex items-center justify-between">
+            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+            <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
+        </div>
+        <div class="mt-2 text-sm text-yellow-500">
+            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
+            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
+        <button onclick="abrirModalReserva(this)" data-titulo="Título del Viaje" class="btn-reservar-internacional mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
+    </div>
+</div>
+
+<!-- TOUR 6 -->
+<div data-id="tour_6" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
+    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">LOS ANGELES FC VS CHIVAS</span></h2>
+    
+    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
+        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
+        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
+        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
+        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
+        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
+        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
+        <div class="flex gap-2">
+            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
+        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
+        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+
+    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
+    <ul class="mt-4 space-y-2 text-gray-300">
+        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
+        <li>Salida: <span class="tour-salida">--</span></li>
+        <li>Regreso: <span class="tour-regreso">--</span></li>
+    </ul>
+    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
+        <div class="flex items-center justify-between">
+            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+            <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
+        </div>
+        <div class="mt-2 text-sm text-yellow-500">
+            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
+            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
+        <button onclick="abrirModalReserva(this)" class="mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
+    </div>
+</div>
+
+<!-- TOUR 7 -->
+<div data-id="tour_7" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
+    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">LOS ANGELES FC VS CHIVAS</span></h2>
+    
+    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
+        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
+        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
+        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
+        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
+        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
+        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
+        <div class="flex gap-2">
+            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
+        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
+        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+
+    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
+    <ul class="mt-4 space-y-2 text-gray-300">
+        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
+        <li>Salida: <span class="tour-salida">--</span></li>
+        <li>Regreso: <span class="tour-regreso">--</span></li>
+    </ul>
+
+    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
+        <div class="flex items-center justify-between">
+            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+            <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
+        </div>
+        <div class="mt-2 text-sm text-yellow-500">
+            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
+            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
+        <button onclick="abrirModalReserva(this)" data-titulo="Título del Viaje" class="btn-reservar-internacional mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
+    </div>
+</div>
+
+<!-- TOUR 8 -->
+<div data-id="tour_8" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
+    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">LOS ANGELES FC VS CHIVAS</span></h2>
+    
+    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
+        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
+        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
+        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
+        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
+        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
+        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
+        <div class="flex gap-2">
+            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+        </div>
+        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
+        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
+        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
+    </div>
+
+    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
+    <ul class="mt-4 space-y-2 text-gray-300">
+        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
+        <li>Salida: <span class="tour-salida">--</span></li>
+        <li>Regreso: <span class="tour-regreso">--</span></li>
+    </ul>
+    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
+        <div class="flex items-center justify-between">
+            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+            <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
+        </div>
         <div class="mt-2 text-sm text-yellow-500">
             Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
             <span class="porcentaje-cupo ml-2 font-bold">0%</span>
@@ -494,13 +740,12 @@
         <div class="bg-gray-900 border border-red-600 text-white rounded-2xl p-6 max-w-lg w-full max-h-[85vh] flex flex-col">
             
             <!-- Encabezado -->
-            <h3 class="text-xl font-black text-red-600 mb-4 text-center uppercase">Políticas y Términos de Viaje</h3>
+            <h3 class="text-xl font-black text-red-600 mb-4 text-center uppercase">Políticas y Términos</h3>
             
             <!-- Texto de Políticas -->
            <div class="text-xs space-y-6 text-gray-300 overflow-y-auto pr-2 mb-4 flex-1 custom-scrollbar">
     
     <div>
-        <h4 class="text-white font-bold mb-3 border-b border-gray-700 pb-1">Políticas de Reservación</h4>
         <ul class="space-y-3">
             <li class="flex gap-2">
                 <span class="text-[#C4151C]">🔷</span>
@@ -528,7 +773,7 @@
     <div class="text-center font-medium text-white bg-[#C4151C]/10 p-4 rounded-xl border border-red-900/30 shadow-lg">
         <p class="mb-3 text-sm">
             👨‍👩‍👧‍👦 Viajes familiares para todas las edades. <br>
-            <span class="text-red-400 font-bold">🚫 Niños menores a 3 años no ingresan al estadio ( Ni con boleto ley de Jalisco).</span>
+            <span class="text-white font-bold">🚫 Niños menores a 3 años no ingresan al estadio ( Ni con boleto ley de Jalisco).</span>
         </p>
         
         <div class="pt-3 border-t border-red-900/30">
@@ -537,17 +782,17 @@
                 <span>⭐️ 10º ANIV</span>
                 <span>✴️ +200 VIAJES</span>
             </div>
-            <p class="text-xs mt-2 text-red-400">🙌 MIL GRACIAS 🙌</p>
+            <p class="text-xs mt-2 text-white">🙌 MIL GRACIAS 🙌</p>
         </div>
     </div>
 </div>
 
 
 <div class="mb-4">
-    <label for="select-lugares" class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1">
+    <label for="select-lugares" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
         ¿Cuántos lugares quieres reservar? (Máx. 11)
     </label>
-    <select id="select-lugares" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500 font-semibold text-gray-800">
+    <select id="select-lugares" class="w-full p-2.5 border border-gray-500 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500 font-semibold text-gray-800">
         <option value="1">1 lugar</option>
         <option value="2">2 lugares</option>
         <option value="3">3 lugares</option>
@@ -559,36 +804,22 @@
         <option value="9">9 lugares</option>
         <option value="10">10 lugares</option>
         <option value="11">11 lugares</option>
+        <option value="12">12 lugares</option>
+        <option value="13">13 lugares</option>
+        <option value="14">14 lugares</option>
+        <option value="15">15 lugares</option>
     </select>
 </div>
 
 <div class="mb-4 flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
-    <span class="text-xs font-bold text-gray-600 uppercase">Total a pagar:</span>
+    <span class="text-xs font-bold text-gray-600 uppercase">Total a pagar del apartado:</span>
     <span id="modal-total-pago" class="text-xl font-extrabold text-[#C4151C]">$0.00</span>
 </div>
 
 
-<div id="modal-instrucciones" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 hidden p-4">
-    <div class="bg-gray-900 border border-green-600 text-white rounded-2xl p-6 max-w-sm w-full shadow-2xl relative">
-        <button onclick="document.getElementById('modal-instrucciones').classList.add('hidden')" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl font-bold">&times;</button>
-        <h3 class="text-xl font-black text-green-500 mb-4 text-center uppercase">¡Reserva Recibida!</h3>
-        <p class="text-sm text-gray-300 mb-4">
-            Al realizar su reservación debe enviarnos foto de su comprobante de depósito por correo electrónico a <b>linearojiblanca@gmail.com</b> con la siguiente información:
-        </p>
-        <ul class="text-xs text-gray-400 space-y-2 mb-6 list-disc ml-4">
-            <li>Nombre de la persona que reserva.</li>
-            <li>Número de WhatsApp.</li>
-            <li>Cantidad de lugares que reserva.</li>
-            <li>Viaje al que hace su reservación.</li>
-        </ul>
-        <button onclick="document.getElementById('modal-instrucciones').classList.add('hidden')" 
-                class="w-full bg-green-600 py-3 rounded-xl font-bold uppercase text-xs hover:bg-green-500 transition-all">
-            Entendido
-        </button>
-    </div>
-</div>
 
-            
+
+    
             <!-- Checkbox y Botón -->
             <div class="mt-4 pt-4 border-t border-gray-700">
                 <label class="flex items-center gap-2 mb-4 cursor-pointer">
@@ -617,12 +848,24 @@
         <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
             PARTIDOS DE <span class="text-[#C4151C]">LOCAL (ESTADIO AKRON)</span>
         </h2>
-        <p class="text-gray-400 text-sm mt-1">Acompaña al Rebaño en casa. Revisa los días activos en el calendario y aparta tu lugar.</p>
+        <p class="text-gray-400 text-sm mt-1">Acompaña al Rebaño en casa y aparta tu lugar.</p>
     </div>
 
 
 
 <!-- INICIO DE LISTA DE PARTIDOS -->
+ <!--modal info de pago-->
+ 
+<dialog id="modal-desglose" class="bg-gray-900 text-white rounded-2xl p-6 shadow-2xl border border-gray-700 w-full max-w-sm backdrop:bg-black/50 backdrop:backdrop-blur-sm">
+    <div id="contenido-desglose">
+        </div>
+    <div class="mt-6 text-right">
+        <button onclick="document.getElementById('modal-desglose').close()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm font-bold text-white transition-all">
+            Cerrar
+        </button>
+    </div>
+</dialog>
+
 
 <!-- JORNADA 1: CHIVAS VS TOLUCA -->
 <div id="partido-toluca" data-id="tour_toluca" class="bg-gray-800/60 backdrop-blur border border-gray-700 rounded-2xl p-5 shadow-lg flex flex-col gap-4 card-hover">
@@ -640,20 +883,20 @@
         <button onclick="guardarCambiosTour(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
     </div>
 
-   <div class="flex justify-between items-start">
-    <div>
-        <span class="bg-[#C4151C]/20 text-[#C4151C] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Jornada 1</span>
-        <h3 class="text-xl font-black tracking-wide uppercase text-white mt-1"><span class="tour-titulo">Chivas vs Toluca</span></h3>
+    <div class="flex justify-between items-start">
+        <div>
+            <span class="bg-[#C4151C]/20 text-[#C4151C] text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">Jornada 1</span>
+            <h3 class="text-xl font-black tracking-wide uppercase text-white mt-1"><span class="tour-titulo">Chivas vs Toluca</span></h3>
+        </div>
+        <span class="text-xs font-bold text-red-400"><i class="fa-solid fa-house-chimney mr-1"></i> Akron</span>
     </div>
-    <span class="text-xs font-bold text-red-400"><i class="fa-solid fa-house-chimney mr-1"></i> Akron</span>
-</div>
 
-<div class="flex items-center gap-2 mt-3 mb-4">
-    <div class="flex-grow bg-gray-700/30 h-2 rounded-full overflow-hidden">
-        <div class="tour-progress-bar bg-red-600 h-full transition-all duration-500" style="width: 0%"></div>
+    <div class="flex items-center gap-2 mt-3 mb-4">
+        <div class="flex-grow bg-gray-700/30 h-2 rounded-full overflow-hidden">
+            <div class="tour-progress-bar bg-red-600 h-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <span class="tour-porcentaje-texto text-[10px] font-bold text-gray-400 w-8 text-right">0%</span>
     </div>
-    <span class="tour-porcentaje-texto text-[10px] font-bold text-gray-400 w-8 text-right">0%</span>
-</div>
 
     <div class="space-y-4 text-xs text-gray-400 border-t border-gray-700/50 pt-4">
         <div class="grid grid-cols-1 gap-2">
@@ -670,19 +913,29 @@
             </div>
         </div>
     </div>
-
- <div class="text-[11px] text-yellow-500 text-right"> Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+    <div class="text-[11px] text-yellow-500 text-right"> Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
     <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
         <div class="flex gap-4">
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p></div>
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p></div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p>
+                <p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p>
+            </div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center gap-1">
+                    Total 
+                    <button onclick="mostrarDesglose(this)" class="admin-only hidden text-gray-400 hover:text-white transition-colors" title="Desglose de pagos">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </button>
+                </p>
+                <p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p>
+            </div>
         </div>
-    <button 
-    onclick="prepararReserva(this)" 
-    class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
-    data-url="https://link.mercadopago.com.mx/pruebasbeto">
-    Reservar
-</button>
+        <button 
+            onclick="prepararReserva(this)" 
+            class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+            data-url="https://link.mercadopago.com.mx/chivatour234">
+            Reservar
+        </button>
     </div>
 </div>
 
@@ -730,15 +983,26 @@
             </div>
         </div>
     </div>
-    <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+     <div class="text-[11px] text-yellow-500 text-right"> Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
     <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
         <div class="flex gap-4">
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p></div>
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p></div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p>
+                <p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p>
+            </div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center gap-1">
+                    Total 
+                    <button onclick="mostrarDesglose(this)" class="admin-only hidden text-gray-400 hover:text-white transition-colors" title="Desglose de pagos">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </button>
+                </p>
+                <p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p>
+            </div>
         </div>
 <button onclick="window.prepararReserva(this)" 
         class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
-        data-url="https://link.mercadopago.com.mx/viajeresrva">
+        data-url="https://link.mercadopago.com.mx/chivatour234">
     Reservar
 </button>       
     </div>
@@ -786,16 +1050,30 @@
             </div>
         </div>
     </div>
-    <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+     <div class="text-[11px] text-yellow-500 text-right"> Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
     <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
         <div class="flex gap-4">
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p></div>
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p></div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p>
+                <p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p>
+            </div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center gap-1">
+                    Total 
+                    <button onclick="mostrarDesglose(this)" class="admin-only hidden text-gray-400 hover:text-white transition-colors" title="Desglose de pagos">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </button>
+                </p>
+                <p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p>
+            </div>
         </div>
-       <button onclick="window.location.href=this.getAttribute('data-url')" class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" data-url="https://link.mercadopago.com.mx/viajeresrva">Reservar</button>
+      <button onclick="window.prepararReserva(this)" 
+        class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+        data-url="https://link.mercadopago.com.mx/chivatour234">
+    Reservar
+</button> 
 </div>
 </div>
-      
 
 
 <!-- JORNADA 8: CHIVAS VS PUMAS UNAM -->
@@ -840,17 +1118,32 @@
             </div>
         </div>
     </div>
-    <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+     <div class="text-[11px] text-yellow-500 text-right"> Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
     <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
         <div class="flex gap-4">
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p></div>
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p></div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p>
+                <p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p>
+            </div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center gap-1">
+                    Total 
+                    <button onclick="mostrarDesglose(this)" class="admin-only hidden text-gray-400 hover:text-white transition-colors" title="Desglose de pagos">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </button>
+                </p>
+                <p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p>
+            </div>
         </div>
-        <button onclick="window.location.href=this.getAttribute('data-url')" class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" data-url="https://link.mercadopago.com.mx/viajeresrva">Reservar</button>
+        <button onclick="window.prepararReserva(this)" 
+        class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+        data-url="https://link.mercadopago.com.mx/chivatour234">
+    Reservar
+</button> 
     </div>
 </div>
 
-      
+
 <!-- JORNADA 10: CHIVAS VS QUERÉTARO -->
 <div id="partido-queretaro" data-id="tour_queretaro" class="bg-gray-800/60 backdrop-blur border border-gray-700 rounded-2xl p-5 shadow-lg flex flex-col gap-4 card-hover">
     <div class="admin-controls hidden p-4 border border-red-500 rounded-lg space-y-2 mb-4 bg-gray-900">
@@ -893,13 +1186,28 @@
             </div>
         </div>
     </div>
-    <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+   <div class="text-[11px] text-yellow-500 text-right"> Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
     <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
         <div class="flex gap-4">
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p></div>
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p></div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p>
+                <p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p>
+            </div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center gap-1">
+                    Total 
+                    <button onclick="mostrarDesglose(this)" class="admin-only hidden text-gray-400 hover:text-white transition-colors" title="Desglose de pagos">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </button>
+                </p>
+                <p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p>
+            </div>
         </div>
-       <button onclick="window.location.href=this.getAttribute('data-url')" class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" data-url="https://link.mercadopago.com.mx/viajeresrva">Reservar</button>
+       <button onclick="window.prepararReserva(this)" 
+        class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+        data-url="https://link.mercadopago.com.mx/chivatour234">
+    Reservar
+</button> 
     </div>
 </div>
 
@@ -946,13 +1254,28 @@
             </div>
         </div>
     </div>
-    <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+    <div class="text-[11px] text-yellow-500 text-right"> Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
     <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
         <div class="flex gap-4">
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p></div>
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p></div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p>
+                <p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p>
+            </div> 
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center gap-1">
+                    Total 
+                    <button onclick="mostrarDesglose(this)" class="admin-only hidden text-gray-400 hover:text-white transition-colors" title="Desglose de pagos">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </button>
+                </p>
+                <p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p>
+            </div>
         </div>
-        <button onclick="window.location.href=this.getAttribute('data-url')" class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" data-url="https://link.mercadopago.com.mx/viajeresrva">Reservar</button>
+        <button onclick="window.prepararReserva(this)" 
+        class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+        data-url="https://link.mercadopago.com.mx/chivatour234">
+    Reservar
+</button> 
     </div>
 </div>
 
@@ -999,14 +1322,29 @@
             </div>
         </div>
     </div>
-    <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+     <div class="text-[11px] text-yellow-500 text-right"> Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
     <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
         <div class="flex gap-4">
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p></div>
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p></div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p>
+                <p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p>
+            </div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center gap-1">
+                    Total 
+                    <button onclick="mostrarDesglose(this)" class="admin-only hidden text-gray-400 hover:text-white transition-colors" title="Desglose de pagos">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </button>
+                </p>
+                <p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p>
+            </div>
         </div>
-        <button onclick="window.location.href=this.getAttribute('data-url')" class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" data-url="https://link.mercadopago.com.mx/viajeresrva">Reservar</button>
-    </div>
+        <button onclick="window.prepararReserva(this)" 
+        class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+        data-url="https://link.mercadopago.com.mx/chivatour234">
+    Reservar
+</button> 
+</div>
 </div>
 
 
@@ -1052,16 +1390,30 @@
             </div>
         </div>
     </div>
-    <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+     <div class="text-[11px] text-yellow-500 text-right"> Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
     <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
         <div class="flex gap-4">
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$<span class="tour-aparta">500</span></p></div>
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">2,500</span></p></div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p>
+                <p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p>
+            </div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center gap-1">
+                    Total 
+                    <button onclick="mostrarDesglose(this)" class="admin-only hidden text-gray-400 hover:text-white transition-colors" title="Desglose de pagos">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </button>
+                </p>
+                <p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p>
+            </div>
         </div>
-       <button onclick="window.location.href=this.getAttribute('data-url')" class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" data-url="https://link.mercadopago.com.mx/viajeresrva">Reservar</button>
+       <button onclick="window.prepararReserva(this)" 
+        class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+        data-url="https://link.mercadopago.com.mx/chivatour234">
+    Reservar
+</button> 
 </div>
 </div>
-
 
 <!-- JORNADA 17: CHIVAS VS CRUZ AZUL -->
 <div id="partido-cruzazul" data-id="tour_cruzazul" class="bg-gray-800/60 backdrop-blur border border-gray-700 rounded-2xl p-5 shadow-lg flex flex-col gap-4 card-hover">
@@ -1105,17 +1457,32 @@
             </div>
         </div>
     </div>
-    <div class="text-[11px] text-yellow-500 text-right">Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
+     <div class="text-[11px] text-yellow-500 text-right"> Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span></div>
     <div class="flex items-center justify-between border-t border-gray-700/50 pt-3 mt-3">
         <div class="flex gap-4">
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p><p class="text-xl font-black text-green-400">$<span class="tour-aparta">500</span></p></div>
-            <div class="text-left"><p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Total</p><p class="text-xl font-black text-white">$<span class="tour-precio">2,500</span></p></div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Aparta con</p>
+                <p class="text-xl font-black text-green-400">$<span class="tour-aparta">--</span></p>
+            </div>
+            <div class="text-left">
+                <p class="text-[10px] text-gray-500 uppercase font-bold tracking-wider flex items-center gap-1">
+                    Total 
+                    <button onclick="mostrarDesglose(this)" class="admin-only hidden text-gray-400 hover:text-white transition-colors" title="Desglose de pagos">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </button>
+                </p>
+                <p class="text-xl font-black text-white">$<span class="tour-precio">--</span></p>
+            </div>
         </div>
-       <button onclick="window.location.href=this.getAttribute('data-url')" class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" data-url="https://link.mercadopago.com.mx/viajeresrva">Reservar</button>
-    </div>
+       <button onclick="window.prepararReserva(this)" 
+        class="btn-reservar-tour bg-[#C4151C] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded-xl uppercase transition-all shadow-md active:scale-95" 
+        data-url="https://link.mercadopago.com.mx/chivatour234">
+    Reservar
+</button> 
 </div>
-</section>
+</div>
 
+</section>
 
 <div id="modal-gracias" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white p-6 rounded-2xl w-full max-w-md shadow-xl relative">
@@ -1137,12 +1504,7 @@
 
 
 
-
-
-
 </section>
-
-
 
 
 
@@ -1150,15 +1512,11 @@
     <script type="module" src="auth.js"></script>
     <script type="module" src="ui.js"></script>    
     <script type="module" src="app-internacional.js"></script>
-    <script type="module" src="app.js?v=2"></script>
+    <script type="module" src="app.js"></script>
     <script type="module" src="comunidad.js"></script>
     <script type="module" src="admin.js"></script>
 </body>
 </html>
-
-
-
-
 
 
 
