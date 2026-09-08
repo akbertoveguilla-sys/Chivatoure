@@ -300,12 +300,23 @@
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-<div id="admin-gallery-controls" class="hidden mb-6 flex justify-center">
-    <button onclick="window.crearNuevaGaleria()" 
-            class="bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700 transition shadow-lg">
-        + Crear Nueva Galería
+<div id="admin-gallery-controls" class="hidden flex items-center gap-3 my-4">
+    <!-- Botón Crear -->
+    <button onclick="window.crearNuevaGaleria()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded shadow transition-colors">
+        ➕ Crear Galería
     </button>
+
+    <!-- Selector + Botón Borrar -->
+    <div class="flex items-center gap-2">
+        <select id="select-galeria-borrar" class="bg-gray-800 text-white text-sm p-2 rounded border border-gray-700 focus:outline-none">
+            <option value="">-- Seleccionar para borrar --</option>
+        </select>
+        <button onclick="window.borrarGaleriaSeleccionada()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded shadow transition-colors">
+            🗑️ Borrar Galería
+        </button>
+    </div>
 </div>
+
 <div id="gallery-container" class="grid grid-cols-1 md:grid-cols-4 gap-6 pb-8">
     </div>
     <div id="gallery-container" class="grid grid-cols-1 md:grid-cols-4 gap-6 pb-8">
