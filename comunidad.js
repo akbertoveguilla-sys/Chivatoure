@@ -7,12 +7,10 @@ import {
     doc, getDoc, deleteDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-
-// ... resto de tus imports
 const storage = getStorage();
 const ADMIN_UID = "f0M2dGbM7aQPVKI2P4Fr7P6NJnX2";
 let swiperInstances = [];
-let galeriaDatos = []; // Se llena desde Firebase
+let galeriaDatos = []; 
 
 // --- 2. FUNCIONES ADMIN ---
 window.cambiarTitulo = async (docId, nuevoTitulo) => {
@@ -47,11 +45,41 @@ window.borrarComentario = async (idComentario) => {
     }
 };
 
-// --- NUEVA FUNCIÓN: BORRAR DESDE EL BOTÓN SUPERIOR ---
-window.borrarGaleriaSeleccionada = async () => {
+window.borrarFoto = async (docId, url) => {
     if (auth.currentUser?.uid !== ADMIN_UID) {
-        return window.mostrarNotificacion("⚠️ No autorizado", true);
+        window.mostrarNotificacion("⚠️ No autorizado", true);
+        return;
     }
+    
+    try {
+        await updateDoc(doc(db, "galerias", docId), {
+            fotos: arrayRemove(url)
+        });
+        window.mostrarNotificacion("✅ Foto eliminada correctamente");
+    } catch (e) { 
+        console.error(e);
+        window.mostrarNotificacion("❌ Error al borrar la foto", true); 
+    }
+};
+
+window.crearNuevaGaleria = async () => {
+    if (auth.currentUser?.uid !== ADMIN_UID) return window.mostrarNotificacion("No autorizado", true);
+    
+    try {
+        await addDoc(collection(db, "galerias"), {
+            titulo: "Nueva Galería (Edítame)",
+            fotos: []
+        });
+        window.mostrarNotificacion("✅ Nueva galería creada");
+    } catch (e) { 
+        console.error(e);
+        window.mostrarNotificacion("❌ Error al crear", true); 
+    }
+};
+
+// --- BORRAR GALERÍA COMPLETA ---
+window.borrarGaleriaSeleccionada = async () => {
+    if (auth.currentUser?.uid !== ADMIN_UID) return window.mostrarNotificacion("⚠️ No autorizado", true);
 
     const select = document.getElementById('select-galeria-borrar');
     const docId = select?.value;
@@ -59,39 +87,56 @@ window.borrarGaleriaSeleccionada = async () => {
     if (!docId) {
         return window.mostrarNotificacion("⚠️ Selecciona una galería para borrar", true);
     }
-    
-    const confirmar = confirm("¿Estás seguro de que deseas eliminar esta galería completa?");
+
+    const confirmar = confirm("¿Estás seguro de que deseas eliminar completamente esta galería?");
     if (!confirmar) return;
 
     try {
         await deleteDoc(doc(db, "galerias", docId));
-        window.mostrarNotificacion("✅ Galería eliminada correctamente");
+        window.mostrarNotificacion("✅ Galería eliminada");
     } catch (e) {
-        console.error("Error al borrar la galería:", e);
+        console.error("Error al borrar galería:", e);
         window.mostrarNotificacion("❌ Error al borrar la galería", true);
     }
 };
 
-// Función para actualizar el selector desplegable
-function actualizarSelectorBorrar() {
-    const select = document.getElementById('select-galeria-borrar');
-    if (!select) return;
+function actualizarBarraAdmin() {
+    const contenedor = document.getElementById('admin-gallery-controls');
+    if (!contenedor) return;
 
-    select.innerHTML = '<option value="">-- Seleccionar para borrar --</option>';
-    galeriaDatos.forEach((item) => {
-        const option = document.createElement('option');
-        option.value = item.id;
-        option.textContent = item.titulo || 'Sin título';
-        select.appendChild(option);
-    });
+    const esAdmin = auth.currentUser?.uid === ADMIN_UID;
+    if (!esAdmin) {
+        contenedor.classList.add('hidden');
+        return;
+    }
+
+    contenedor.classList.remove('hidden');
+    contenedor.className = "my-4 flex flex-wrap items-center justify-center gap-3 px-4";
+
+    const opciones = galeriaDatos.map(g => `<option value="${g.id}">${g.titulo || 'Sin título'}</option>`).join('');
+
+    contenedor.innerHTML = `
+        <button onclick="window.crearNuevaGaleria()" class="bg-[#C4151C] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 transform hover:scale-105 border border-red-500 flex items-center justify-center gap-2 cursor-pointer">
+            <i class="fas fa-plus"></i> Crear Nueva Galería
+        </button>
+        
+        <div class="flex items-center gap-2 bg-gray-900 p-1.5 rounded-full border border-gray-700 shadow-lg">
+            <select id="select-galeria-borrar" class="bg-gray-800 text-white text-xs px-3 py-1.5 rounded-full focus:outline-none max-w-[180px] border border-gray-700">
+                <option value="">-- Seleccionar galería --</option>
+                ${opciones}
+            </select>
+            <button onclick="window.borrarGaleriaSeleccionada()" class="bg-red-700 hover:bg-red-800 text-white text-xs font-bold py-1.5 px-3 rounded-full transition flex items-center gap-1 cursor-pointer">
+                <i class="fas fa-trash-alt"></i> Borrar
+            </button>
+        </div>
+    `;
 }
 
-// funcion de carruzel 
+// --- 3. RENDERIZAR GALERÍA ---
 function renderizarGaleria() {
     const container = document.getElementById('gallery-container');
     if (!container) return;
 
-    // 1. Destruir instancias previas
     swiperInstances.forEach(s => {
         try { s.destroy(true, true); } catch (e) {}
     });
@@ -99,9 +144,10 @@ function renderizarGaleria() {
 
     container.innerHTML = "";
 
+    actualizarBarraAdmin();
+
     if (!galeriaDatos || galeriaDatos.length === 0) {
         container.innerHTML = `<p class="text-white text-center p-4">No hay galerías para mostrar.</p>`;
-        actualizarSelectorBorrar();
         return;
     }
 
@@ -113,37 +159,36 @@ function renderizarGaleria() {
         div.className = "flex flex-col items-center w-full";
 
         div.innerHTML = `
-    <div class="swiper swiper-${idx} w-full h-auto bg-gray-900 rounded-lg overflow-hidden shadow-md">
-        <div class="swiper-wrapper">
-            ${fotos.length > 0 
-                ? fotos.map((url, imgIdx) => `
-                    <div class="swiper-slide cursor-pointer relative" onclick="window.abrirLightbox(${idx}, ${imgIdx})">
-                        <img src="${url}" class="w-full h-full object-contain">
-                        ${esAdmin ? `
-                            <button onclick="event.stopPropagation(); window.borrarFoto('${item.id}', '${url}')" 
-                                    class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full z-20 hover:bg-red-800 shadow-lg flex items-center justify-center font-bold">
-                                ×
-                            </button>
-                        ` : ''}
-                    </div>
-                `).join('')
-                : '<div class="swiper-slide flex items-center justify-center text-white p-10">Sin fotos</div>'
-            }
-        </div>
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
-    </div>
+            <div class="swiper swiper-${idx} w-full h-auto bg-gray-900 rounded-lg overflow-hidden shadow-md">
+                <div class="swiper-wrapper">
+                    ${fotos.length > 0 
+                        ? fotos.map((url, imgIdx) => `
+                            <div class="swiper-slide cursor-pointer relative" onclick="window.abrirLightbox(${idx}, ${imgIdx})">
+                                <img src="${url}" class="w-full h-full object-contain">
+                                ${esAdmin ? `
+                                    <button onclick="event.stopPropagation(); window.borrarFoto('${item.id}', '${url}')" 
+                                            class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full z-20 hover:bg-red-800 shadow-lg flex items-center justify-center font-bold">
+                                        ×
+                                    </button>
+                                ` : ''}
+                            </div>
+                        `).join('')
+                        : '<div class="swiper-slide flex items-center justify-center text-white p-10">Sin fotos</div>'
+                    }
+                </div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
 
             ${esAdmin ? `
                 <div class="admin-only mt-2 p-2 bg-gray-800 rounded w-full">
-                    <input type="text" value="${item.titulo || ''}" onchange="window.cambiarTitulo('${item.id}', this.value)" class="text-black p-1 text-sm w-full" placeholder="Nuevo título">
+                    <input type="text" value="${item.titulo || ''}" onchange="window.cambiarTitulo('${item.id}', this.value)" class="text-black p-1 text-sm w-full rounded" placeholder="Nuevo título">
                     <input type="file" onchange="window.subirFoto('${item.id}', this.files[0])" class="text-white text-xs mt-1">
                 </div>` : ''}
             <h3 class="mt-3 text-white font-bold text-sm uppercase">${item.titulo || 'Sin título'}</h3>
         `;
         container.appendChild(div);
 
-        // 2. Crear nueva instancia
         const s = new Swiper(`.swiper-${idx}`, {
             loop: fotos.length > 2, 
             observer: true,
@@ -162,8 +207,6 @@ function renderizarGaleria() {
         s.autoplay.start();
         swiperInstances.push(s); 
     });
-
-    actualizarSelectorBorrar();
 }
 
 // --- 4. LÓGICA DE INICIO ---
@@ -172,16 +215,14 @@ let currentPhotoIdx = 0;
 let ultimoSnapshot = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    // A. Escuchar cambios en la base de datos
     onSnapshot(collection(db, "galerias"), (snapshot) => {
         galeriaDatos = []; 
         snapshot.forEach((doc) => {
             galeriaDatos.push({ id: doc.id, ...doc.data() }); 
         });
-        renderizarGaleria(); // Redibujar cuando hay datos nuevos
+        renderizarGaleria(); 
     });
 
-    // B. Comentarios
     const lista = document.getElementById('comment-list');
     if(lista) {
         const q = query(collection(db, "comentarios"), orderBy("fecha", "desc"), limit(20));
@@ -189,13 +230,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// --- 5. AUTENTICACIÓN Y UI (REACTIVA) ---
+// --- 5. AUTENTICACIÓN Y UI ---
 onAuthStateChanged(auth, async (user) => {
-
-    // 1. Redibujar la galería al cambiar de sesión (Login/Logout)
     renderizarGaleria(); 
 
-    // 2. Lógica de inputs de usuario
     const nombreInput = document.getElementById('nombre-usuario');
     const comentarioInput = document.getElementById('txt-comentario');
     const btnEnviar = document.getElementById('btn-enviar');
@@ -232,20 +270,9 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     if (ultimoSnapshot) pintarComentarios(ultimoSnapshot);
-
-    // Control de visibilidad del contenedor de admin
-    const btnCrear = document.getElementById('admin-gallery-controls');
-    if (btnCrear) {
-        if (user && user.uid === ADMIN_UID) {
-            btnCrear.classList.remove('hidden'); // Mostrar si es admin
-        } else {
-            btnCrear.classList.add('hidden');    // Ocultar si no lo es
-        }
-    }
 });
 
-
-// --- 6. FUNCIONES GLOBALES ---
+// --- 6. FUNCIONES GLOBALES Y LIGHTBOX ---
 window.validarSesion = () => {
     if (!auth.currentUser) {
         window.mostrarNotificacion("⚠️ Inicia sesión para comentar.", true);
@@ -349,37 +376,3 @@ function pintarComentarios(snapshot) {
         }
     }
 }
-
-// borra la foto subida
-window.borrarFoto = async (docId, url) => {
-    if (auth.currentUser?.uid !== ADMIN_UID) {
-        window.mostrarNotificacion("⚠️ No autorizado", true);
-        return;
-    }
-    
-    try {
-        await updateDoc(doc(db, "galerias", docId), {
-            fotos: arrayRemove(url)
-        });
-        window.mostrarNotificacion("✅ Foto eliminada correctamente");
-    } catch (e) { 
-        console.error(e);
-        window.mostrarNotificacion("❌ Error al borrar la foto", true); 
-    }
-};
-
-// crea una nueva galeria
-window.crearNuevaGaleria = async () => {
-    if (auth.currentUser?.uid !== ADMIN_UID) return window.mostrarNotificacion("No autorizado", true);
-    
-    try {
-        await addDoc(collection(db, "galerias"), {
-            titulo: "Nueva Galería (Edítame)",
-            fotos: []
-        });
-        window.mostrarNotificacion("✅ Nueva galería creada");
-    } catch (e) { 
-        console.error(e);
-        window.mostrarNotificacion("❌ Error al crear", true); 
-    }
-};
