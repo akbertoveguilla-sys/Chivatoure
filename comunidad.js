@@ -4,7 +4,7 @@ import { db, auth } from './firebase-config.js';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
 import { 
     collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp, 
-    doc, getDoc, deleteDoc, updateDoc, arrayUnion,arrayRemove} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    doc, getDoc, deleteDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
 
@@ -47,6 +47,24 @@ window.borrarComentario = async (idComentario) => {
     }
 };
 
+// --- NUEVA FUNCIÓN: BORRAR GALERÍA COMPLETA ---
+window.borrarGaleria = async (docId) => {
+    if (auth.currentUser?.uid !== ADMIN_UID) {
+        return window.mostrarNotificacion("⚠️ No autorizado", true);
+    }
+    
+    // Confirmación de seguridad
+    const confirmar = confirm("¿Estás seguro de que deseas eliminar esta galería completa?");
+    if (!confirmar) return;
+
+    try {
+        await deleteDoc(doc(db, "galerias", docId));
+        window.mostrarNotificacion("✅ Galería eliminada correctamente");
+    } catch (e) {
+        console.error("Error al borrar la galería:", e);
+        window.mostrarNotificacion("❌ Error al borrar la galería", true);
+    }
+};
 
 // funcion de carruzel 
 function renderizarGaleria() {
@@ -95,11 +113,15 @@ function renderizarGaleria() {
         <div class="swiper-button-prev"></div>
     </div>
 
-
             ${esAdmin ? `
-                <div class="admin-only mt-2 p-2 bg-gray-800 rounded w-full">
-                    <input type="text" value="${item.titulo || ''}" onchange="window.cambiarTitulo('${item.id}', this.value)" class="text-black p-1 text-sm w-full" placeholder="Nuevo título">
-                    <input type="file" onchange="window.subirFoto('${item.id}', this.files[0])" class="text-white text-xs mt-1">
+                <div class="admin-only mt-2 p-2 bg-gray-800 rounded w-full flex flex-col gap-2">
+                    <input type="text" value="${item.titulo || ''}" onchange="window.cambiarTitulo('${item.id}', this.value)" class="text-black p-1 text-sm w-full rounded" placeholder="Nuevo título">
+                    <div class="flex items-center justify-between gap-2">
+                        <input type="file" onchange="window.subirFoto('${item.id}', this.files[0])" class="text-white text-xs">
+                        <button onclick="window.borrarGaleria('${item.id}')" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded font-bold transition-colors shrink-0">
+                            🗑️ Borrar Galería
+                        </button>
+                    </div>
                 </div>` : ''}
             <h3 class="mt-3 text-white font-bold text-sm uppercase">${item.titulo || 'Sin título'}</h3>
         `;
@@ -193,8 +215,6 @@ onAuthStateChanged(auth, async (user) => {
 
     if (ultimoSnapshot) pintarComentarios(ultimoSnapshot);
 
-    // ... dentro de tu función onAuthStateChanged ...
-
     // Control de visibilidad del botón de crear galería
     const btnCrear = document.getElementById('admin-gallery-controls');
     if (btnCrear) {
@@ -263,8 +283,6 @@ window.cambiarFotoManual = (direccion) => {
     if (img) img.src = galeria[currentPhotoIdx];
 };
 
-
-
 function pintarComentarios(snapshot) {
     ultimoSnapshot = snapshot;
     const lista = document.getElementById('comment-list');
@@ -314,7 +332,7 @@ function pintarComentarios(snapshot) {
     }
 }
 
-//borra la foto subida
+// borra la foto subida
 window.borrarFoto = async (docId, url) => {
     if (auth.currentUser?.uid !== ADMIN_UID) {
         window.mostrarNotificacion("⚠️ No autorizado", true);
@@ -332,7 +350,7 @@ window.borrarFoto = async (docId, url) => {
     }
 };
 
-//crea una nueva galeria
+// crea una nueva galeria
 window.crearNuevaGaleria = async () => {
     if (auth.currentUser?.uid !== ADMIN_UID) return window.mostrarNotificacion("No autorizado", true);
     
