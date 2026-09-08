@@ -47,13 +47,19 @@ window.borrarComentario = async (idComentario) => {
     }
 };
 
-// --- NUEVA FUNCIÓN: BORRAR GALERÍA COMPLETA ---
-window.borrarGaleria = async (docId) => {
+// --- NUEVA FUNCIÓN: BORRAR DESDE EL BOTÓN SUPERIOR ---
+window.borrarGaleriaSeleccionada = async () => {
     if (auth.currentUser?.uid !== ADMIN_UID) {
         return window.mostrarNotificacion("⚠️ No autorizado", true);
     }
+
+    const select = document.getElementById('select-galeria-borrar');
+    const docId = select?.value;
+
+    if (!docId) {
+        return window.mostrarNotificacion("⚠️ Selecciona una galería para borrar", true);
+    }
     
-    // Confirmación de seguridad
     const confirmar = confirm("¿Estás seguro de que deseas eliminar esta galería completa?");
     if (!confirmar) return;
 
@@ -65,6 +71,20 @@ window.borrarGaleria = async (docId) => {
         window.mostrarNotificacion("❌ Error al borrar la galería", true);
     }
 };
+
+// Función para actualizar el selector desplegable
+function actualizarSelectorBorrar() {
+    const select = document.getElementById('select-galeria-borrar');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">-- Seleccionar para borrar --</option>';
+    galeriaDatos.forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.id;
+        option.textContent = item.titulo || 'Sin título';
+        select.appendChild(option);
+    });
+}
 
 // funcion de carruzel 
 function renderizarGaleria() {
@@ -81,6 +101,7 @@ function renderizarGaleria() {
 
     if (!galeriaDatos || galeriaDatos.length === 0) {
         container.innerHTML = `<p class="text-white text-center p-4">No hay galerías para mostrar.</p>`;
+        actualizarSelectorBorrar();
         return;
     }
 
@@ -114,14 +135,9 @@ function renderizarGaleria() {
     </div>
 
             ${esAdmin ? `
-                <div class="admin-only mt-2 p-2 bg-gray-800 rounded w-full flex flex-col gap-2">
-                    <input type="text" value="${item.titulo || ''}" onchange="window.cambiarTitulo('${item.id}', this.value)" class="text-black p-1 text-sm w-full rounded" placeholder="Nuevo título">
-                    <div class="flex items-center justify-between gap-2">
-                        <input type="file" onchange="window.subirFoto('${item.id}', this.files[0])" class="text-white text-xs">
-                        <button onclick="window.borrarGaleria('${item.id}')" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded font-bold transition-colors shrink-0">
-                            🗑️ Borrar Galería
-                        </button>
-                    </div>
+                <div class="admin-only mt-2 p-2 bg-gray-800 rounded w-full">
+                    <input type="text" value="${item.titulo || ''}" onchange="window.cambiarTitulo('${item.id}', this.value)" class="text-black p-1 text-sm w-full" placeholder="Nuevo título">
+                    <input type="file" onchange="window.subirFoto('${item.id}', this.files[0])" class="text-white text-xs mt-1">
                 </div>` : ''}
             <h3 class="mt-3 text-white font-bold text-sm uppercase">${item.titulo || 'Sin título'}</h3>
         `;
@@ -146,6 +162,8 @@ function renderizarGaleria() {
         s.autoplay.start();
         swiperInstances.push(s); 
     });
+
+    actualizarSelectorBorrar();
 }
 
 // --- 4. LÓGICA DE INICIO ---
@@ -215,7 +233,7 @@ onAuthStateChanged(auth, async (user) => {
 
     if (ultimoSnapshot) pintarComentarios(ultimoSnapshot);
 
-    // Control de visibilidad del botón de crear galería
+    // Control de visibilidad del contenedor de admin
     const btnCrear = document.getElementById('admin-gallery-controls');
     if (btnCrear) {
         if (user && user.uid === ADMIN_UID) {
