@@ -114,6 +114,7 @@ function actualizarBarraAdmin() {
     const esAdmin = auth.currentUser?.uid === ADMIN_UID;
     if (!esAdmin) {
         contenedor.classList.add('hidden');
+        contenedor.innerHTML = ''; // CORRECCIÓN: Limpiar el contenido HTML para evitar botones visibles a usuarios normales
         return;
     }
 
@@ -144,6 +145,7 @@ function renderizarGaleria() {
     const container = document.getElementById('gallery-container');
     if (!container) return;
 
+    // Destruir instancias previas de Swiper antes de limpiar
     swiperInstances.forEach(s => {
         try { s.destroy(true, true); } catch (e) {}
     });
@@ -151,6 +153,7 @@ function renderizarGaleria() {
 
     container.innerHTML = "";
 
+    // Actualizar barra de controles de admin
     actualizarBarraAdmin();
 
     if (!galeriaDatos || galeriaDatos.length === 0) {
@@ -163,10 +166,10 @@ function renderizarGaleria() {
     galeriaDatos.forEach((item, idx) => {
         const fotos = item.fotos || [];
         const div = document.createElement('div');
-        div.className = "flex flex-col items-center w-full";
+        div.className = "flex flex-col items-center w-full my-4";
 
         div.innerHTML = `
-            <div class="swiper swiper-${idx} w-full h-auto bg-gray-900 rounded-lg overflow-hidden shadow-md">
+            <div class="swiper swiper-${idx} w-full h-auto bg-gray-900 rounded-lg overflow-hidden shadow-md relative">
                 <div class="swiper-wrapper">
                     ${fotos.length > 0 
                         ? fotos.map((url, imgIdx) => `
@@ -174,7 +177,8 @@ function renderizarGaleria() {
                                 <img src="${url}" class="w-full h-full object-contain">
                                 ${esAdmin ? `
                                     <button onclick="event.stopPropagation(); window.borrarFoto('${item.id}', '${url}')" 
-                                            class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full z-20 hover:bg-red-800 shadow-lg flex items-center justify-center font-bold">
+                                            class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full z-20 hover:bg-red-800 shadow-lg flex items-center justify-center font-bold cursor-pointer"
+                                            title="Eliminar esta foto">
                                         ×
                                     </button>
                                 ` : ''}
@@ -183,8 +187,8 @@ function renderizarGaleria() {
                         : '<div class="swiper-slide flex items-center justify-center text-white p-10">Sin fotos</div>'
                     }
                 </div>
-                <div class="swiper-button-next"></div>
-                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next swiper-btn-next-${idx}"></div>
+                <div class="swiper-button-prev swiper-btn-prev-${idx}"></div>
             </div>
 
             ${esAdmin ? `
@@ -201,22 +205,23 @@ function renderizarGaleria() {
         `;
         container.appendChild(div);
 
+        // CORRECCIÓN: loop en false evita que Swiper duplique slides al inicio/final
         const s = new Swiper(`.swiper-${idx}`, {
-            loop: fotos.length > 2, 
+            loop: false, 
             observer: true,
             observeParents: true,
-            autoplay: {
+            autoplay: fotos.length > 1 ? {
                 delay: 3000,
                 disableOnInteraction: false,
                 pauseOnMouseEnter: false,
-            },
+            } : false,
             navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
+                nextEl: `.swiper-btn-next-${idx}`,
+                prevEl: `.swiper-btn-prev-${idx}`,
             },
         });
 
-        s.autoplay.start();
+        if (fotos.length > 1) s.autoplay.start();
         swiperInstances.push(s); 
     });
 }
@@ -244,6 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // --- 5. AUTENTICACIÓN Y UI ---
 onAuthStateChanged(auth, async (user) => {
+    // Re-renderizamos para actualizar permisos de admin
     renderizarGaleria(); 
 
     const nombreInput = document.getElementById('nombre-usuario');
@@ -360,7 +366,7 @@ function pintarComentarios(snapshot) {
 
         const esAdmin = auth.currentUser && auth.currentUser.uid === ADMIN_UID;
         const botonBorrar = esAdmin 
-            ? `<button onclick="window.borrarComentario('${doc.id}')" class="text-red-500 hover:text-red-700 ml-2 font-bold cursor-pointer">🗑️</button>` 
+            ? `<button onclick="window.borrarComentario('${doc.id}')" class="text-red-500 hover:text-red-700 ml-2 font-bold cursor-pointer" title="Eliminar comentario">🗑️</button>` 
             : '';
 
         lista.innerHTML += `
