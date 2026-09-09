@@ -357,374 +357,112 @@
 
 
 <section id="page-internacionales" class="page-section max-w-6xl mx-auto px-4 mt-4">
-    <h2 class="text-3xl font-black text-red-600 mb-8">CHIVATOURS INTERNACIONALES</h2>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8"> 
-
-      <div data-id="tour_angeles" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
-    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">⚫LOS ANGELES FC VS CHIVAS 🔴</span></h2>
-    
-    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
-        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
-        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
-        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
-        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
-        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
-        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
-        <div class="flex gap-2">
-            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
-            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
-        </div>
-        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
-        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
-        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
-    </div>
-
-    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
-    <ul class="mt-4 space-y-2 text-gray-300">
-        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
-        <li>Salida: <span class="tour-salida">--</span></li>
-        <li>Regreso: <span class="tour-regreso">--</span></li>
-    </ul>
-
-    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
-        <div class="flex items-center justify-between">
-            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
-            <!-- Botón de Info circular (ahora controlado por admin-controls) -->
-            <button onclick="abrirModalInfo(this)" 
-            title="Ver desglose de patrocinios"
-            class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md"> 
-            i
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <h2 class="text-3xl font-black text-red-600">CHIVATOURS INTERNACIONALES</h2>
+        
+        <!-- BARRA DE ACCIONES ADMIN (Se muestra sólo si es admin) -->
+        <div class="admin-controls hidden flex flex-wrap gap-3">
+            <button onclick="crearNuevoTourInternacional()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition flex items-center gap-2">
+                ➕ Crear Tour Internacional
+            </button>
+            <button onclick="abrirModalEliminarTour()" class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition flex items-center gap-2">
+                🗑️ Eliminar un Tour
             </button>
         </div>
-        <div class="mt-2 text-sm text-yellow-500">
-            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
-            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
+    </div>
+
+    <!-- CONTENEDOR DINÁMICO DE TOURS -->
+    <div id="contenedor-tours-internacionales" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <!-- TOUR 1 -->
+        <div data-id="tour_angeles" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl relative">
+            <h2 class="text-2xl font-black text-white"><span class="tour-titulo">⚫LOS ANGELES FC VS CHIVAS 🔴</span></h2>
+            
+            <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
+                <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
+                <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
+                <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
+                <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
+                <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
+                <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
+                <div class="flex gap-2">
+                    <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
+                    <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+                </div>
+                <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
+                <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
+                
+                <div class="flex gap-2 mt-2">
+                    <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700 transition">Guardar Cambios</button>
+                    <button onclick="eliminarTourPorBoton(this)" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded font-bold transition" title="Eliminar este tour">🗑️</button>
+                </div>
+            </div>
+
+            <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
+            <ul class="mt-4 space-y-2 text-gray-300">
+                <li>Fecha: <span class="tour-fecha-evento">--</span></li>
+                <li>Salida: <span class="tour-salida">--</span></li>
+                <li>Regreso: <span class="tour-regreso">--</span></li>
+            </ul>
+
+            <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
+                <div class="flex items-center justify-between">
+                    <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
+                    <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
+                </div>
+                <div class="mt-2 text-sm text-yellow-500">
+                    Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
+                    <span class="porcentaje-cupo ml-2 font-bold">0%</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
+                <button onclick="abrirModalReserva(this)" data-titulo="Título del Viaje" class="btn-reservar-internacional mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
+            </div>
         </div>
-        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
-        
-        <button onclick="abrirModalReserva(this)" data-titulo="Título del Viaje" class="btn-reservar-internacional mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
-        
-        <!-- Modal de Información -->
-        <div id="modal-info" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-70 p-4">
-            <div class="bg-gray-800 border border-gray-600 rounded-2xl p-6 max-w-sm w-full relative">
-                <!-- Botón de cierre -->
-                <button onclick="cerrarModalInfo()" class="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl p-2">✕</button>
-                
-                <!-- Contenedor donde se insertará el mensaje -->
-                <div id="modal-info-contenido"></div>
-                
-                <!-- Botón de cierre inferior -->
-                <button onclick="cerrarModalInfo()" class="mt-6 w-full bg-gray-600 py-2 rounded-xl text-white font-bold hover:bg-gray-500">Cerrar</button>
+
+    </div>
+
+    <!-- MODAL PARA SELECCIONAR Y ELIMINAR UN TOUR COMPLETO -->
+    <div id="modal-eliminar-tour" class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black bg-opacity-80 p-4">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 max-w-md w-full relative shadow-2xl">
+            <button onclick="cerrarModalEliminarTour()" class="absolute top-3 right-4 text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+            
+            <h3 class="text-xl font-black text-red-500 mb-4 flex items-center gap-2">🗑️ Eliminar Tour Internacional</h3>
+            <p class="text-gray-300 text-sm mb-4">Selecciona el tour que deseas eliminar permanentemente de Firestore y del sitio web:</p>
+
+            <select id="select-tour-eliminar" class="w-full bg-gray-700 text-white p-3 rounded-xl border border-gray-600 focus:outline-none focus:border-red-500 mb-6">
+                <!-- Se llena dinámicamente con JS -->
+            </select>
+
+            <div class="flex gap-3">
+                <button onclick="cerrarModalEliminarTour()" class="w-1/2 bg-gray-600 text-white py-2 rounded-xl font-bold hover:bg-gray-500 transition">Cancelar</button>
+                <button onclick="confirmarEliminarTourSeleccionado()" class="w-1/2 bg-red-600 text-white py-2 rounded-xl font-bold hover:bg-red-700 transition">Eliminar Tour</button>
             </div>
         </div>
     </div>
-</div>
 
-
-        <!--tour 2-->
-<div data-id="tour_mazatlan" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
-    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">LOS ANGELES FC VS CHIVAS</span></h2>
-    
-    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
-        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
-        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
-        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
-        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
-        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
-        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
-        <div class="flex gap-2">
-            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
-            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
+    <!-- Modal de Información -->
+    <div id="modal-info" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-70 p-4">
+        <div class="bg-gray-800 border border-gray-600 rounded-2xl p-6 max-w-sm w-full relative">
+            <button onclick="cerrarModalInfo()" class="absolute top-2 right-2 text-gray-400 hover:text-white text-2xl p-2">✕</button>
+            <div id="modal-info-contenido"></div>
+            <button onclick="cerrarModalInfo()" class="mt-6 w-full bg-gray-600 py-2 rounded-xl text-white font-bold hover:bg-gray-500">Cerrar</button>
         </div>
-        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
-        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
-        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
     </div>
 
-    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
-    <ul class="mt-4 space-y-2 text-gray-300">
-        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
-        <li>Salida: <span class="tour-salida">--</span></li>
-        <li>Regreso: <span class="tour-regreso">--</span></li>
-    </ul>
-
-    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
-        <div class="flex items-center justify-between">
-            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
-            <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
+    <!-- Modal Políticas / Reserva -->
+    <div id="modal-politicas" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+        <div class="bg-gray-800 p-8 rounded-2xl max-w-lg text-white max-h-[80vh] overflow-y-auto relative">
+            <button onclick="cerrarModalReserva()" class="absolute top-2 right-4 text-3xl font-bold text-gray-400 hover:text-white">&times;</button>
+            <h2 class="text-xl font-bold mb-2">Itinerario</h2>
+            <div id="modal-itinerario-text" class="text-sm mb-4 text-gray-300 whitespace-pre-line"></div>
+            <h2 class="text-xl font-bold mb-2">Políticas</h2>
+            <div id="modal-terminos-text" class="text-sm mb-4 text-gray-300 whitespace-pre-line"></div>
+            <label class="flex items-center gap-2 mb-6">
+                <input type="checkbox" id="check-inter-terminos"> Acepto términos y condiciones
+            </label>
+            <button id="btn-confirmar-reserva" disabled onclick="window.confirmarReservaInternacional(this)" class="bg-red-600 w-full py-3 rounded-lg font-bold">Confirmar y Reservar</button>
         </div>
-        <div class="mt-2 text-sm text-yellow-500">
-            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
-            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
-        </div>
-        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
-        <button onclick="abrirModalReserva(this)" data-titulo="Título del Viaje" class="btn-reservar-internacional mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
     </div>
-</div>
-
-<!-- TOUR 3 -->
-<div data-id="tour_puebla" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
-    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">LOS ANGELES FC VS CHIVAS</span></h2>
-    
-    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
-        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
-        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
-        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
-        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
-        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
-        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
-        <div class="flex gap-2">
-            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
-            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
-        </div>
-        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
-        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
-        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
-    </div>
-
-    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
-    <ul class="mt-4 space-y-2 text-gray-300">
-        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
-        <li>Salida: <span class="tour-salida">--</span></li>
-        <li>Regreso: <span class="tour-regreso">--</span></li>
-    </ul>
-
-    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
-        <div class="flex items-center justify-between">
-            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
-            <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
-        </div>
-        <div class="mt-2 text-sm text-yellow-500">
-            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
-            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
-        </div>
-        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
-        <button onclick="abrirModalReserva(this)" data-titulo="Título del Viaje" class="btn-reservar-internacional mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
-    </div>
-</div>
-
-<!-- TOUR 4 -->
-<div data-id="tour_disney" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
-    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">a</span></h2>
-    
-    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
-        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
-        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
-        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
-        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
-        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
-        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
-        <div class="flex gap-2">
-            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
-            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
-        </div>
-        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
-        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
-        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
-    </div>
-
-    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">agt</span></p>
-    <ul class="mt-4 space-y-2 text-gray-300">
-        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
-        <li>Salida: <span class="tour-salida">--</span></li>
-        <li>Regreso: <span class="tour-regreso">--</span></li>
-    </ul>
-
-    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
-        <div class="flex items-center justify-between">
-            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
-            <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
-        </div>
-        <div class="mt-2 text-sm text-yellow-500">
-            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
-            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
-        </div>
-        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
-        <button onclick="abrirModalReserva(this)" data-titulo="Título del Viaje" class="btn-reservar-internacional mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
-    </div>
-</div>
-
-<!-- TOUR 5 -->
-<div data-id="tour_5" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
-    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">LOS ANGELES FC VS CHIVAS</span></h2>
-    
-    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
-        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
-        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
-        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
-        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
-        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
-        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
-        <div class="flex gap-2">
-            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
-            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
-        </div>
-        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
-        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
-        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
-    </div>
-
-    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
-    <ul class="mt-4 space-y-2 text-gray-300">
-        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
-        <li>Salida: <span class="tour-salida">--</span></li>
-        <li>Regreso: <span class="tour-regreso">--</span></li>
-    </ul>
-
-    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
-        <div class="flex items-center justify-between">
-            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
-            <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
-        </div>
-        <div class="mt-2 text-sm text-yellow-500">
-            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
-            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
-        </div>
-        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
-        <button onclick="abrirModalReserva(this)" data-titulo="Título del Viaje" class="btn-reservar-internacional mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
-    </div>
-</div>
-
-<!-- TOUR 6 -->
-<div data-id="tour_6" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
-    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">LOS ANGELES FC VS CHIVAS</span></h2>
-    
-    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
-        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
-        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
-        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
-        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
-        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
-        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
-        <div class="flex gap-2">
-            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
-            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
-        </div>
-        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
-        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
-        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
-    </div>
-
-    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
-    <ul class="mt-4 space-y-2 text-gray-300">
-        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
-        <li>Salida: <span class="tour-salida">--</span></li>
-        <li>Regreso: <span class="tour-regreso">--</span></li>
-    </ul>
-    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
-        <div class="flex items-center justify-between">
-            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
-            <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
-        </div>
-        <div class="mt-2 text-sm text-yellow-500">
-            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
-            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
-        </div>
-        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
-        <button onclick="abrirModalReserva(this)" class="mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
-    </div>
-</div>
-
-<!-- TOUR 7 -->
-<div data-id="tour_7" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
-    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">LOS ANGELES FC VS CHIVAS</span></h2>
-    
-    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
-        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
-        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
-        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
-        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
-        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
-        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
-        <div class="flex gap-2">
-            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
-            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
-        </div>
-        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
-        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
-        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
-    </div>
-
-    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
-    <ul class="mt-4 space-y-2 text-gray-300">
-        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
-        <li>Salida: <span class="tour-salida">--</span></li>
-        <li>Regreso: <span class="tour-regreso">--</span></li>
-    </ul>
-
-    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
-        <div class="flex items-center justify-between">
-            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
-            <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
-        </div>
-        <div class="mt-2 text-sm text-yellow-500">
-            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
-            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
-        </div>
-        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
-        <button onclick="abrirModalReserva(this)" data-titulo="Título del Viaje" class="btn-reservar-internacional mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
-    </div>
-</div>
-
-<!-- TOUR 8 -->
-<div data-id="tour_8" class="bg-gray-800 rounded-3xl p-8 border border-gray-700 shadow-xl">
-    <h2 class="text-2xl font-black text-white"><span class="tour-titulo">LOS ANGELES FC VS CHIVAS</span></h2>
-    
-    <div class="admin-controls hidden mt-4 p-4 border border-red-500 rounded-lg space-y-2">
-        <input type="text" class="inter-input-titulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Título">
-        <input type="text" class="inter-input-subtitulo w-full bg-gray-700 text-white p-2 rounded" placeholder="Subtítulo">
-        <input type="text" class="inter-input-fecha-evento w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Evento">
-        <input type="text" class="inter-input-salida w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Salida">
-        <input type="text" class="inter-input-regreso w-full bg-gray-700 text-white p-2 rounded" placeholder="Fecha Regreso">
-        <input type="number" class="inter-input-precio w-full bg-gray-700 text-white p-2 rounded" placeholder="Precio">
-        <div class="flex gap-2">
-            <input type="number" class="inter-input-ocupados w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Ocupados">
-            <input type="number" class="inter-input-totales w-1/2 bg-gray-700 text-white p-2 rounded" placeholder="Totales">
-        </div>
-        <textarea class="inter-input-itinerario w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Itinerario detallado..."></textarea>
-        <textarea class="inter-input-terminos w-full bg-gray-700 text-white p-2 rounded mt-2" placeholder="Términos y condiciones..."></textarea>
-        <button onclick="guardarCambiosInternacional(this)" class="w-full bg-green-600 text-white p-2 rounded font-bold hover:bg-green-700">Guardar Cambios</button>
-    </div>
-
-    <p class="font-bold text-red-400 text-xl mt-2"><span class="tour-subtitulo">SUBTÍTULO</span></p>
-    <ul class="mt-4 space-y-2 text-gray-300">
-        <li>Fecha: <span class="tour-fecha-evento">--</span></li>
-        <li>Salida: <span class="tour-salida">--</span></li>
-        <li>Regreso: <span class="tour-regreso">--</span></li>
-    </ul>
-    <div class="mt-6 bg-gray-900 p-6 rounded-2xl border border-gray-700">
-        <div class="flex items-center justify-between">
-            <p class="text-2xl font-bold text-white">$<span class="tour-precio">0</span> MXN</p>
-            <button onclick="abrirModalInfo(this)" title="Ver desglose de patrocinios" class="admin-controls hidden w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center hover:bg-blue-700 transition shadow-md">i</button>
-        </div>
-        <div class="mt-2 text-sm text-yellow-500">
-            Cupos: <span class="tour-cupos-ocupados">0</span> / <span class="tour-cupos-totales">0</span>
-            <span class="porcentaje-cupo ml-2 font-bold">0%</span>
-        </div>
-        <div class="w-full bg-gray-700 rounded-full h-2 mt-2"><div class="barra-progreso bg-red-600 h-2 rounded-full" style="width: 0%"></div></div>
-        <button onclick="abrirModalReserva(this)" class="mt-4 w-full bg-red-600 py-3 rounded-xl font-bold hover:bg-red-700">Reservar Ahora</button>
-    </div>
-</div>
-
-
-
-<div id="modal-politicas" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-    <div class="bg-gray-800 p-8 rounded-2xl max-w-lg text-white max-h-[80vh] overflow-y-auto relative">
-        <button onclick="cerrarModalReserva()" class="absolute top-2 right-4 text-3xl font-bold text-gray-400 hover:text-white">&times;</button>
-
-        <h2 class="text-xl font-bold mb-2">Itinerario</h2>
-        <div id="modal-itinerario-text" class="text-sm mb-4 text-gray-300 whitespace-pre-line"></div>
-        
-        <h2 class="text-xl font-bold mb-2">Políticas</h2>
-        <div id="modal-terminos-text" class="text-sm mb-4 text-gray-300 whitespace-pre-line"></div>
-        
-        <label class="flex items-center gap-2 mb-6">
-            <input type="checkbox" id="check-inter-terminos"> Acepto términos y condiciones
-        </label>
-       <button id="btn-confirmar-reserva" disabled onclick="window.confirmarReservaInternacional(this)" class="bg-red-600 w-full py-3 rounded-lg font-bold">Confirmar y Reservar</button>
-</div>
-</div>
 </section>
 
 
