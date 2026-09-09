@@ -296,39 +296,24 @@
 
 
 <div id="page-comunidad" class="page-section"> 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <!-- Contenedor dinámico de controles de Admin (El JS se encarga de inyectar los botones si eres admin) -->
+    <div id="admin-gallery-controls" class="hidden my-4 text-center"></div>
 
-<div id="admin-gallery-controls" class="hidden my-4 text-center">
-    <button onclick="crearNuevaGaleria()" class="bg-[#C4151C] hover:bg-red-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 transform hover:scale-105 border border-red-500 flex items-center justify-center gap-2 mx-auto cursor-pointer">
-        <i class="fas fa-plus"></i> Crear Nueva Galería
-    </button>
-</div>
+    <!-- Contenedor de galerías (Único) -->
+    <div id="gallery-container" class="grid grid-cols-1 md:grid-cols-4 gap-6 pb-8"></div>
 
-    <!-- Selector + Botón Borrar -->
-    <div class="flex items-center gap-2">
-        <select id="select-galeria-borrar" class="bg-gray-800 text-white text-sm p-2 rounded border border-gray-700 focus:outline-none">
-            <option value="">-- Seleccionar para borrar --</option>
-        </select>
-        <button onclick="window.borrarGaleriaSeleccionada()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded shadow transition-colors">
-            🗑️ Borrar Galería
-        </button>
-    </div>
-</div>
-
-<div id="gallery-container" class="grid grid-cols-1 md:grid-cols-4 gap-6 pb-8">
-    </div>
-    <div id="gallery-container" class="grid grid-cols-1 md:grid-cols-4 gap-6 pb-8">
-        </div>
-
+    <!-- Visor Lightbox -->
     <div id="lightbox" class="fixed inset-0 z-[9999] bg-black/95 hidden flex items-center justify-center p-4">
-        <button onclick="window.cerrarLightbox()" class="absolute top-5 right-5 text-white text-4xl">×</button>
-        <button onclick="window.cambiarFotoManual(-1)" class="absolute left-5 text-white text-5xl">❮</button>
+        <button onclick="window.cerrarLightbox()" class="absolute top-5 right-5 text-white text-4xl cursor-pointer">×</button>
+        <button onclick="window.cambiarFotoManual(-1)" class="absolute left-5 text-white text-5xl cursor-pointer">❮</button>
         <img id="lightbox-img" src="" class="max-w-[90%] max-h-[80vh] border-4 border-[#8B5E3C] rounded">
-        <button onclick="window.cambiarFotoManual(1)" class="absolute right-5 text-white text-5xl">❯</button>
+        <button onclick="window.cambiarFotoManual(1)" class="absolute right-5 text-white text-5xl cursor-pointer">❯</button>
     </div>
 
+    <!-- Calificación y Comentarios -->
     <div class="max-w-4xl mx-auto mt-12 bg-gray-800 p-8 rounded-2xl border border-gray-700 shadow-xl">
         <h3 class="text-2xl font-bold text-white mb-6 text-center">Califica tu experiencia</h3>
         
@@ -352,7 +337,7 @@
             </div>
             <textarea onfocus="window.validarSesion()" id="txt-comentario" placeholder="Tu queja, sugerencia o comentario..." class="bg-gray-900 border border-gray-600 p-3 rounded-lg text-white w-full h-32"></textarea>
             
-            <button type="submit" id="btn-enviar" class="w-full bg-[#C4151C] hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-all">Enviar Comentario</button>
+            <button type="submit" id="btn-enviar" class="w-full bg-[#C4151C] hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-all cursor-pointer">Enviar Comentario</button>
         </form>
 
         <div class="mt-12">
