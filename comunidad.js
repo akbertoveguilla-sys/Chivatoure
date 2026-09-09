@@ -77,16 +77,10 @@ window.crearNuevaGaleria = async () => {
     }
 };
 
-// --- BORRAR GALERÍA COMPLETA ---
-window.borrarGaleriaSeleccionada = async () => {
+// --- BORRAR GALERÍA DIRECTA ---
+window.borrarGaleria = async (docId) => {
     if (auth.currentUser?.uid !== ADMIN_UID) return window.mostrarNotificacion("⚠️ No autorizado", true);
-
-    const select = document.getElementById('select-galeria-borrar');
-    const docId = select?.value;
-
-    if (!docId) {
-        return window.mostrarNotificacion("⚠️ Selecciona una galería para borrar", true);
-    }
+    if (!docId) return window.mostrarNotificacion("⚠️ Galería no válida", true);
 
     const confirmar = confirm("¿Estás seguro de que deseas eliminar completamente esta galería?");
     if (!confirmar) return;
@@ -98,6 +92,19 @@ window.borrarGaleriaSeleccionada = async () => {
         console.error("Error al borrar galería:", e);
         window.mostrarNotificacion("❌ Error al borrar la galería", true);
     }
+};
+
+window.borrarGaleriaSeleccionada = async () => {
+    if (auth.currentUser?.uid !== ADMIN_UID) return window.mostrarNotificacion("⚠️ No autorizado", true);
+
+    const select = document.getElementById('select-galeria-borrar');
+    const docId = select?.value;
+
+    if (!docId) {
+        return window.mostrarNotificacion("⚠️ Selecciona una galería para borrar", true);
+    }
+
+    await window.borrarGaleria(docId);
 };
 
 function actualizarBarraAdmin() {
@@ -181,9 +188,14 @@ function renderizarGaleria() {
             </div>
 
             ${esAdmin ? `
-                <div class="admin-only mt-2 p-2 bg-gray-800 rounded w-full">
-                    <input type="text" value="${item.titulo || ''}" onchange="window.cambiarTitulo('${item.id}', this.value)" class="text-black p-1 text-sm w-full rounded" placeholder="Nuevo título">
-                    <input type="file" onchange="window.subirFoto('${item.id}', this.files[0])" class="text-white text-xs mt-1">
+                <div class="admin-only mt-2 p-2 bg-gray-800 rounded w-full flex flex-col gap-2">
+                    <div class="flex items-center gap-2">
+                        <input type="text" value="${item.titulo || ''}" onchange="window.cambiarTitulo('${item.id}', this.value)" class="text-black p-1 text-sm flex-1 rounded" placeholder="Nuevo título">
+                        <button onclick="window.borrarGaleria('${item.id}')" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-1.5 px-3 rounded shadow transition flex items-center gap-1 cursor-pointer whitespace-nowrap" title="Eliminar galería completa">
+                            <i class="fas fa-trash-alt"></i> Borrar
+                        </button>
+                    </div>
+                    <input type="file" onchange="window.subirFoto('${item.id}', this.files[0])" class="text-white text-xs">
                 </div>` : ''}
             <h3 class="mt-3 text-white font-bold text-sm uppercase">${item.titulo || 'Sin título'}</h3>
         `;
